@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.gis.db.models import GeometryField
+#from django.contrib.gis.db.models import GeometryField
 
 # Create your models here.
 
@@ -22,39 +22,6 @@ class CohortMetricsLkp(models.Model):
     class Meta:
         db_table = 'cohort_metrics_lkp'
         db_table_comment = 'Table to enable / identify / define metrics associated with cohorts, e.g. calculations of stand density'
-
-class FpcHarvestTracker(models.Model):
-    objectid = models.IntegerField(primary_key=True)
-    lois = models.CharField(max_length=20, blank=True, null=True)
-    fallers_block = models.CharField(unique=True, max_length=10, blank=True, null=True)
-    operation_start = models.DateField(blank=True, null=True)
-    authorised_officer = models.CharField(max_length=50, blank=True, null=True)
-    cutover_progress = models.SmallIntegerField(blank=True, null=True)
-    custodian_name = models.CharField(max_length=50, blank=True, null=True)
-    approval_date = models.DateField(blank=True, null=True)
-    cell_certified = models.DateField(blank=True, null=True)
-    comments = models.CharField(max_length=250, blank=True, null=True)
-    shape_area = models.FloatField(blank=True, null=True)
-    shape_length = models.FloatField(blank=True, null=True)
-    globalid = models.UUIDField(blank=True, null=True)
-    karri_mature_harvest_cf = models.BooleanField(blank=True, null=True)
-    karri_1st_thinning = models.BooleanField(blank=True, null=True)
-    karri_2nd_thinning = models.BooleanField(blank=True, null=True)
-    jarrah_integrated_harvest = models.BooleanField(blank=True, null=True)
-    jarrah_salvage_operation = models.BooleanField(blank=True, null=True)
-    jarrah_mine_site_clearing = models.BooleanField(blank=True, null=True)
-    karrai_salvage_operation = models.BooleanField(blank=True, null=True)
-    contractor = models.CharField(max_length=50, blank=True, null=True)
-    creation_date = models.DateField(blank=True, null=True)
-    creator = models.CharField(max_length=50, blank=True, null=True)
-    editdate = models.DateField(blank=True, null=True)
-    editor = models.CharField(max_length=50, blank=True, null=True)
-    season = models.CharField(max_length=50, blank=True, null=True)
-    geom = GeometryField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'fpc_harvest_tracker'
-        db_table_comment = 'placeholder for FPC Harvest Tracking tool, to facilitate tracking progress of the operation\n\nIntend for this table/dataset to be displayed as a reference layer, and the database is not intended to hold these data objects'
 
 
 class MachineLkp(models.Model):
