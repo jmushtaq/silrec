@@ -1,4 +1,4 @@
-{% extends 'sqs/base.html' %}
+{% extends 'silrec/base.html' %}
 
 {% load bootstrap3 %}
 
@@ -9,8 +9,8 @@
 {% endblock %}
 
 {% block left_menu_items %}
-    <li><a  href="{% url 'ds_contact' %}">Contact Us</a></li>
-    <li><a  href="{% url 'ds_further_info' %}">Further Information</a></li>
+    <li><a  href="{% url 'contact' %}">Contact Us</a></li>
+    <li><a  href="{% url 'further_info' %}">Further Information</a></li>
 {% endblock %}
 
 {% block messages %}
@@ -21,9 +21,9 @@
         <div class="row">
             <div class="col-md-8">
                 <h2>
-                    Further Information
+                    Contact {{system_name}} section 
                 </h2>
-                <p>For further information, please email <b>{{ support_email }}</b>.</p>
+                <p>To contact a member of the {{ system_name }} section, please email <b>{{ support_email }}</b>.</p>
             </div>
         </div>
     </div>

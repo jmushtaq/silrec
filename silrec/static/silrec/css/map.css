@@ -1,0 +1,178 @@
+.map{
+    height: 600px; /*800px;*/
+    width: 100%;
+    padding: 0;
+}
+.map-wrapper {
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+.basemap-button {
+    position: absolute;
+    bottom: 0.5em;
+    right: 0.5em;
+    z-index: 400;
+    -moz-box-shadow: 3px 3px 3px #777;
+    -webkit-box-shadow: 3px 3px 3px #777;
+    box-shadow: 3px 3px 3px #777;
+    -moz-filter: brightness(1.0);
+    -webkit-filter: brightness(1.0);
+    filter: brightness(1.0);
+    border: 2px white solid;
+    background-color: white;
+}
+.basemap-button:hover,.optional-layers-button:hover{
+    cursor: pointer;
+    -moz-filter: brightness(0.9);
+    -webkit-filter: brightness(0.9);
+    filter: brightness(0.9);
+}
+.basemap-button:active {
+    bottom: 0.5em;
+    right: 0.5em;
+    -moz-box-shadow: 2px 2px 2px #555;
+    -webkit-box-shadow: 2px 2px 2px #555;
+    box-shadow: 2px 2px 2px rgb(85, 85, 85);
+    -moz-filter: brightness(0.8);
+    -webkit-filter: brightness(0.8);
+    filter: brightness(0.8);
+}
+#basemap_sat, #basemap_osm {
+    max-width: 81px;
+    max-height: 81px;
+}
+.optional-layers-wrapper {
+    position: absolute;
+    top: 7.0em;
+    left: 0.5em;
+}
+.optional-layers-button-wrapper {
+    position: relative;
+    z-index: 400;
+    border-radius: 2px;
+    /* background-color: white; */
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    margin-bottom: 2px;
+}
+.optional-layers-button {
+    position: relative;
+    background: white;
+    background: rgba(0,60,136,0.5);
+    color: rgba(0,60,136,0.5);
+    border-radius: 2px;
+    cursor: pointer;
+    display: block;
+    padding: 4px;
+    text-align: center;
+}
+.optional-layers-button-active {
+    position: relative;
+    /* z-index: 400; */
+    background: rgba(70, 142, 21, 0.4);
+    border-radius: 2px;
+    cursor: pointer;
+    display: block;
+    padding: 4px;
+    text-align: center;
+}
+.svg-icon {
+    /* First make img black then invert to white */
+    filter: brightness(0) invert(1);
+}
+.layer_options {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 410;
+    background: white;
+    border-radius: 2px;
+    cursor: auto;
+    min-width: max-content;
+    /*
+    box-shadow: 3px 3px 3px #777;
+    -moz-filter: brightness(1.0);
+    -webkit-filter: brightness(1.0);
+    */
+    padding: 0.5em;
+    border: 3px solid rgba(5, 5, 5, .1);
+}
+.layer_option:hover {
+    cursor: pointer;
+}
+.layer_menu {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+/* Prevent the checkbox from growing in size when layer option covers more than 1 line */
+input.layer_option {
+    width: 1.15em;
+    margin-left: .4em;
+}
+
+/* OpenLayers style definitions */
+.ol-popup {
+    position: absolute;
+    min-width: 95px;
+    background-color: white;
+    -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+    padding: 2px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    bottom: 12px;
+    left: -50px;
+}
+.ol-popup:after, .ol-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+.ol-popup:after {
+    border-top-color: white;
+    border-width: 10px;
+    left: 48px;
+    margin-left: -10px;
+}
+.ol-popup:before {
+    border-top-color: #cccccc;
+    border-width: 11px;
+    left: 48px;
+    margin-left: -11px;
+}
+.ol-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+}
+.close-icon:hover {
+    filter: brightness(80%);
+}
+.overlay-feature-popup {
+    min-width: 340px;
+    font-size: 0.875rem;
+    pointer-events: auto;
+}
+.custom-ol-control {
+    height: 1.325em;
+    width: 1.325em;
+    text-align: center;
+    background-color: white;
+    margin: 1px;
+    padding: 0;
+    color: #666;
+    font-size: inherit;
+    border: none;
+    border-radius: 2px;
+}
+.feature-auto-save {
+    top: 3.75em;
+    left: 0.5em;
+    height: 1.425em;
+}

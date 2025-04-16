@@ -1,0 +1,4 @@
+/* Place swal2 popovers above bootstrap popovers */
+.swal2-popover {
+    z-index: 1090!important;
+}

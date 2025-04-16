@@ -1,7 +1,25 @@
 from django.db import models
 #from django.contrib.gis.db.models import GeometryField
 
-# Create your models here.
+
+class ValidateModelMixin(object):
+    def clean(self):
+        #import ipdb; ipdb.set_trace()
+        for field in self._meta.fields:
+            field.primary_key
+            value = getattr(self, field.name)
+
+            if value and field.primary_key:
+                # strip whitespace and restrict to upper case
+                try:
+                    setattr(self, field.name, value.strip().upper())
+                except Exception:
+                    pass
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(ValidateModelMixin, self).save(*args, **kwargs)
+
 
 class CohortMetricsLkp(models.Model):
     metric_id = models.AutoField(primary_key=True, db_comment='Primary key')
@@ -101,8 +119,8 @@ class SpeciesApiLkp(models.Model):
         db_table_comment = 'Lookup code values and definitions for API species types.\nDelete comments below for PRD.\nDW>> Suggest table renamed dominant species.  I.e. Jarrah or Karri etc. Then a relationship created to cohort (DW).\n\nShould the species codes be a replication of the Oracle table sfm_common.species. (DW) \nDS>> No, these are API type codes, as per the FMIS API types; i.e. a stand-based descriptor c.f. a tree-based descriptor.'
 
 
-class TaskLkp(models.Model):
-    task = models.CharField(primary_key=True, max_length=20, db_comment='Code for the task\n\nAPPLY check constraint to restrict to upper case')
+class TaskLkp(ValidateModelMixin, models.Model):
+    task = models.CharField(primary_key=True, unique=True, max_length=20, db_comment='Code for the task\n\nAPPLY check constraint to restrict to upper case')
     task_name = models.CharField(max_length=50, blank=True, null=True, db_comment='Short meaningful name for the task')
     definition = models.TextField(blank=True, null=True, db_comment='Detailed definition of task')
     category1_label = models.CharField(max_length=50, blank=True, null=True)
@@ -140,6 +158,9 @@ class TaskLkp(models.Model):
     ztreatmentid = models.BigIntegerField(db_column='ztreatmentID', blank=True, null=True)  # Field name made lowercase.
     effective_from = models.DateTimeField(blank=True, null=True)
     effective_to = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return self.task
 
     class Meta:
         db_table = 'task_lkp'

@@ -13,8 +13,8 @@ from django.db import transaction
 
 from datetime import datetime, timedelta
 
-#from sqs.helpers import is_internal
-#from sqs.forms import *
+from silrec.helpers import is_internal
+from silrec.forms import *
 
 from django.core.management import call_command
 import json
@@ -23,9 +23,19 @@ from decimal import Decimal
 import logging
 logger = logging.getLogger('payment_checkout')
 
-'''
+from django.contrib.auth import logout
+from django.contrib.auth.views import LogoutView
+
+class UserLogoutView(LogoutView):
+
+    def get(self, request):
+        logout(request)
+        return redirect('/')
+
+
 class InternalView(UserPassesTestMixin, TemplateView):
-    template_name = 'sqs/dash/index.html'
+    #template_name = 'sqs/dash/index.html'
+    template_name = 'silrec/index2.html'
 
     def test_func(self):
         return is_internal(self.request)
@@ -37,7 +47,8 @@ class InternalView(UserPassesTestMixin, TemplateView):
         return context
 
 class ExternalView(LoginRequiredMixin, TemplateView):
-    template_name = 'sqs/dash/index.html'
+    #template_name = 'sqs/dash/index.html'
+    template_name = 'silrec/index2.html'
 
     def get_context_data(self, **kwargs):
         context = super(ExternalView, self).get_context_data(**kwargs)
@@ -45,17 +56,39 @@ class ExternalView(LoginRequiredMixin, TemplateView):
         context['dev_url'] = settings.DEV_STATIC_URL
         return context
 
-class QuestionMasterlistRoutingView(TemplateView):
-    template_name = 'sqs/index.html'
+
+class SilrecRoutingView(TemplateView):
+    template_name = 'silrec/index2.html'
 
     def get(self, *args, **kwargs):
         if self.request.user.is_authenticated:
             if is_internal(self.request):
                 return redirect('internal')
             return redirect('external')
-        #kwargs['form'] = LoginForm
-        #return super(BorangaRoutingView, self).get(*args, **kwargs)
-        return redirect('/accounts/login')
+        kwargs['form'] = LoginForm
+        return super(SilrecRoutingView, self).get(*args, **kwargs)
+        #return redirect('/accounts/login')
+
+
+class SilrecContactView(TemplateView):
+    template_name = 'silrec/contact.html'
+
+
+class SilrecFurtherInformationView(TemplateView):
+    template_name = 'silrec/further_info.html'
+
+'''
+FROM DAS!!!
+class DisturbanceRoutingView(TemplateView):
+    template_name = 'disturbance/index.html'
+
+    def get(self, *args, **kwargs):
+        if self.request.user.is_authenticated():
+            if is_internal(self.request):
+                return redirect('internal')
+            return redirect('external')
+        kwargs['form'] = LoginForm
+        return super(DisturbanceRoutingView, self).get(*args, **kwargs)
 
 
 class MasterlistContactView(TemplateView):
@@ -112,6 +145,7 @@ class HelpView(LoginRequiredMixin, TemplateView):
                 qs = HelpPage.objects.filter(application_type__name__icontains=application_type, help_type=HelpPage.HELP_TEXT_EXTERNAL).order_by('-version')
                 context['help'] = qs.first()
         return context
+'''
 
 
 class ManagementCommandsView(LoginRequiredMixin, TemplateView):
@@ -127,5 +161,4 @@ class ManagementCommandsView(LoginRequiredMixin, TemplateView):
 
         return render(request, self.template_name, data)
 
-'''
 

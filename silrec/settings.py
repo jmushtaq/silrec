@@ -31,6 +31,8 @@ LEDGER_USER = env('LEDGER_USER', 'asi@dbca.wa.gov.au')
 LEDGER_PASS = env('LEDGER_PASS')
 #SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
 BUILD_TAG = env('BUILD_TAG', hashlib.md5(os.urandom(32)).hexdigest())  # URL of the Dev app.js served by webpack & express
+ENABLE_DJANGO_LOGIN = env('ENABLE_DJANGO_LOGIN', False)
+LOGIN_REDIRECT_URL = "/"  # new
 
 REQUEST_TIMEOUT = env('REQUEST_TIMEOUT', 300) # 20 secs
 
@@ -118,7 +120,7 @@ INSTALLED_APPS = [
     'django_cron',
 
     #'reversion_compare',
-    #'bootstrap3',
+    'bootstrap3',
     'silrec',
     'silrec.components.main',
     'silrec.components.forest_blocks',
@@ -206,7 +208,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'siltrec', 'templates'),
+            os.path.join(BASE_DIR, 'silrec', 'templates'),
             os.path.join(BASE_DIR, 'silrec', 'templates', 'silrec'),
         ],
         'APP_DIRS': True,
@@ -216,6 +218,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'silrec.context_processors.silrec_url',
             ],
         },
     },

@@ -1,0 +1,204 @@
+{% load bootstrap3 %}
+
+{% load static %}
+
+{% load users %}
+{% load utils %}
+{% is_internal as is_internal_login %}
+{% is_internal_path as is_internal_login_path %}
+{% is_silrec_admin as is_silrec_admin_user %}
+{% system_maintenance_due as system_maintenance_due %}
+{% system_name_short as short_name %}
+{% dept_name as department_name %}
+{% system_name as system_name %}
+{% system_name_short as system_name_short %}
+{% support_email as support_email %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            {% bootstrap_css %}
+                <link type="text/css" href="{% static 'silrec/css/base.css' %}" rel="stylesheet">
+            {% if not dev %}
+	    <link rel="stylesheet" href="{% static 'silrec_vue/static/css/app.css' %}?v={{build_tag}}">
+            {% endif %}
+            {% block extra_css %}
+            {% endblock %}
+            {% block extra_js %}
+            {% endblock %}
+            <title>
+                {% block title %}
+                {{ DISPLAYED_SYSTEM_NAME }} - {{ department_name }}
+                {% endblock %}
+            </title>
+
+        </meta>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" type="image/ico" href="/static/favicon.ico"/>
+        <script language="javascript">
+            env = {
+                "kmi_server_url": "{{ KMI_SERVER_URL }}",
+                "sqs_apiurl": "{{ SQS_APIURL }}",
+                "show_das_map": "{{ SHOW_DAS_MAP }}",
+                "max_layers_per_sqq": "{{ MAX_LAYERS_PER_SQQ }}"
+            }
+        </script>
+    </head>
+    <body>
+        <!-- {% if DEBUG %}<div style="position: absolute; color: dodgerblue; font-size: 0.5em;">{{ DOMAIN_DETECTED }}</div>{% endif %} -->
+        <header class="topmast">
+            {% block header %}
+                {% include 'silrec/header.html' %}
+            {% endblock %}
+        </header>
+        {% block menu %}
+            <div class="container-fluid">
+                <div class="row">
+                    <nav class="navbar navbar-default">
+                        <div class="container">
+                            <div class="navbar-header">
+                                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                                    <span class="sr-only">Toggle navigation</span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                    <span class="icon-bar"></span>
+                                </button>
+
+                                {% if not empty_menu %}
+                                    {% if not is_internal_login_path %}
+                                        <a class="navbar-brand" href="/external/" title="External Home View"><div style="inline"><img src="{% static 'silrec/img/dpaw_small.png' %}">Home</div></a>
+                                    {% endif %}
+                                    {% if is_internal_login and is_internal_login_path %}
+                                        <a class="navbar-brand" href="{% url 'home' %}"><div style="inline"><img src="{% static 'silrec/img/dpaw_small.png' %}">Forest Blocks</div></a>
+                                    {% endif %}
+                                {% endif %}
+
+                            </div>
+                            <div id="navbar" class="navbar-collapse collapse">
+                                <ul class="nav navbar-nav">
+                                    {% block left_menu_items %}
+                                        {% if not empty_menu %}
+                                            {% comment %}
+                                            {% if request.user.is_authenticated %}
+			                    {{request.user}}
+                                            {% endcomment %}
+                                            {% if True %}
+                                                {% if is_internal_login and is_internal_login_path%}
+                                                    <li><a href="/internal/approvals">Finalised</a></li>
+                                                    <li><a href="/internal/compliances">Compliance with Requirements</a></li>
+                                                    <li><a href="/internal/search">Search</a></li>
+                                                    {% if TEMPLATE_GROUP == 'apiary' %}
+                                                        <li><a href="/internal/sites">Sites</a></li>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endblock %}
+                                </ul>
+                                <ul class="nav navbar-nav navbar-right">
+                                    {% if not empty_menu %}
+                                        {% if request.user.is_authenticated %}
+                                            <li>
+                                                <a>
+                                                Welcome
+                                                <strong>
+                                                    {% if request.user.first_name %}
+                                                        {{ request.user.get_short_name }}
+                                                    {% elif request.user.last_name %}
+                                                        {{ request.user.last_name }}
+                                                    {% else %}
+                                                        {{ request.user.email }}
+                                                    {% endif %}
+                                                </strong>
+                                                </a>
+                                            </li>
+                                            <li class="dropdown">
+                                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                                    Options
+                                                    <span class="caret"></span>
+                                                </a>
+                                                <ul class="dropdown-menu" style="z-index:99999">
+                                                    {% if is_silrec_admin_user or request.user.is_superuser %}
+                                                        <li><a href="{% url 'admin:index' %}">Admin</a></li>
+							{% if DOMAIN_DETECTED != 'apiary' %}
+                                                            <li><a href="/internal/schema">Manage Application Schema</a></li>
+							    <!-- <li><a href="/filelist">View Export Files</a></li> -->
+                                                        {% endif %}
+                                                        <li role="separator" class="divider"></li>
+                                                    {% endif %}
+                                                    {% if request.user.is_superuser %}
+                                                        <li><a href="{% url 'mgt-commands' %}">Management Commands</a></li>
+                                                    {% endif %}
+                                            {% comment %}
+                                                    <li><a href="{% url 'manage-account' %}">Manage Account</a></li>
+
+                                                    <li><a href="{% url 'accounts:logout' %}?next=/">Logout</a></li>
+                                            {% endcomment %}
+                                                    <li><a href="{% url 'logout' %}?next=/">Logout</a></li>
+                                                </ul>
+                                            </li>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% block right_menu_items %}
+                                    {% endblock %}
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+
+            </div>
+        {% endblock %}
+        {% block breadcrumbs %}
+        {% endblock %}
+        {% block messages %}
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        {% for message in messages %}
+                            <div class="{{ message|bootstrap_message_classes }} alert-dismissable">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#215;</button>
+                                {{ message|safe }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        {% endblock %}
+
+        {% if system_maintenance_due %}
+            <div class="alert alert-warning">
+                <strong>Notice!</strong> System will be down for maintenance between {{ system_maintenance_due }}
+            </div>
+        {% endif %}
+
+        {% block content %}
+        <!-- dash/index.html inserts <div id="app"></div> tag here, which is replaced by the Vue components >-->
+        {% endblock %}
+
+        {% block modals %}
+        {% endblock %}
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        {% if not dev %}
+            <!--<script type="text/javascript" src="https://static.dpaw.wa.gov.au/static/cdnjs/ajax/libs/jquery/2.1.2/jquery.min.js"></script>
+            <script type="text/javascript" src="https://static.dpaw.wa.gov.au/static/cdnjs/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+	<script type="text/javascript" src="{% static 'silrec/static/js/manifest.js' %}?v={{build_tag}}"></script>
+	<script type="text/javascript" src="{% static 'silrec_vue/static/js/vendor.js' %}?v={{build_tag}}"></script>
+            {% if app_build_url %}
+	    <!-- script type="text/javascript" src="{% static 'silrec_vue/static/js/app.js' %}?v={{build_tag}}"></script -->
+	<script type="text/javascript" src="{{ app_build_url }}?v={{build_tag}}"></script>
+            {% else %}
+	<script type="text/javascript" src="{% static 'silrec_vue/static/js/app.js' %}?v={{build_tag}}"></script>
+            {% endif %}
+        {% else %}
+            <script type="text/javascript" src="{{ dev_url }}"></script>
+        {% endif %}
+        {% block custom_js %}
+        {% endblock %}
+    </body>
+</html>

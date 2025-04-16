@@ -47,9 +47,22 @@ urlpatterns = [
 
 urlpatterns = [
     re_path(r'admin/', admin.site.urls),
-    re_path(r'^logout/$', LogoutView.as_view(), {'next_page': '/'}, name='logout'),
-    re_path(r'^$', TemplateView.as_view(template_name='sqs/base2.html'), name='home'),
+    re_path('logout/', views.UserLogoutView.as_view(http_method_names = ['get', 'post', 'options']), name='logout'),
+    #re_path(r'^$', TemplateView.as_view(template_name='base.html'), name='home'),
+    re_path(r'^$', views.SilrecRoutingView.as_view(), name='home'),
+
+    re_path(r'^internal/', views.InternalView.as_view(), name='internal'),
+    re_path(r'^external/', views.ExternalView.as_view(), name='external'),
+    re_path(r'^contact/', views.SilrecContactView.as_view(), name='contact'),
+    re_path(r'^further_info/', views.SilrecFurtherInformationView.as_view(), name='further_info'),
+    re_path(r'^mgt-commands/$', views.ManagementCommandsView.as_view(), name='mgt-commands'),
+
 ]
+
+if settings.ENABLE_DJANGO_LOGIN:
+    urlpatterns.append(
+        re_path(r"^ssologin/", LoginView.as_view(), name="ssologin")
+    )
 
 #if settings.SHOW_DEBUG_TOOLBAR:
 #    from debug_toolbar.toolbar import debug_toolbar_urls

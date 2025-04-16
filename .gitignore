@@ -10,6 +10,7 @@ mooring/cache/*
 csv
 *.csv
 *.xls*
+*.swo
 data_store/
 archive/
 

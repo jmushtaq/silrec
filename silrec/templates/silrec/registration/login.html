@@ -1,0 +1,102 @@
+{% block title %}{% endblock %}
+
+{% block content %}
+
+<div class="login">
+  <div class="form">
+    <h1>Development Login</h1>
+    <form class="registration-form">
+      <input type="text" placeholder="name" />
+      <input type="password" placeholder="password" />
+      <input type="text" placeholder="email" />
+      <button>Create</button>
+      <p><a href="#">Log In</a></p>
+    </form>
+    <form class="login-form" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button>Login</button>
+      <!--<input type='hidden' name='next' value='{% if next %}{{ next }}{% else %}/{% endif %}'>-->
+      <input type='hidden' value='/'>
+    </form>
+  </div>
+</div>
+
+<style>
+  /* path -> static/css/login.css  */
+
+  @import url(https://fonts.googleapis.com/css?family=Lato:300);
+
+  .errorlist {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: red;
+    font-weight: bold;
+  }
+
+  .login {
+    width: 500px;
+    padding: 10% 0 0;
+    margin: auto;
+  }
+
+  .form {
+    position: relative;
+    z-index: 1;
+    background: #FFFFFF;
+    max-width: 360px;
+    margin: 0 auto 100px;
+    padding: 45px;
+    text-align: center;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  }
+
+  .form input {
+    font-family: "Lato", sans-serif;
+    outline: 0;
+    background: #e7e4e4;
+    width: 100%;
+    border: 0;
+    margin: 0 0 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 14px;
+  }
+
+  .form button {
+    font-family: "Lato", sans-serif;
+    text-transform: uppercase;
+    outline: 0;
+    background: #262725;
+    width: 100%;
+    border: 0;
+    padding: 15px;
+    color: #FFFFFF;
+    font-size: 14px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+  }
+
+  .form button:hover,
+  .form button:active,
+  .form button:focus {
+    background: #3d3d3d;
+  }
+
+  .form .registration-form {
+    display: none;
+  }
+
+  body {
+    background: #3d3d3d;
+    font-family: "Lato", sans-serif;
+  }
+
+  /* baltlogs.com */
+</style>
+
+
+{% endblock %}
