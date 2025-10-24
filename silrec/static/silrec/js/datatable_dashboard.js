@@ -3,6 +3,12 @@ class DatatableDashboard {
         this.element = element;
         this.apiUrl = this.element.dataset.apiUrl;
         this.table = null;
+        this.filters = {
+            status: [],
+            fromDate: '',
+            toDate: '',
+            search: ''
+        };
         this.init();
     }
 
@@ -19,15 +25,9 @@ class DatatableDashboard {
     initializeTable() {
         const table = this.element.querySelector('table');
 
-        // Ensure table has an ID
-        if (!table.id) {
-            table.id = 'datatable-' + Math.random().toString(36).substr(2, 9);
-        }
-
         // Destroy existing DataTable if it exists
         if ($.fn.DataTable.isDataTable(table)) {
             $(table).DataTable().destroy();
-            $(table).empty();
         }
 
         this.table = $(table).DataTable({
@@ -36,26 +36,40 @@ class DatatableDashboard {
             ajax: {
                 url: this.apiUrl,
                 type: 'GET',
-                data: function(d) {
+                data: (d) => {
+                    // Add custom filters to the request
                     return {
                         draw: d.draw,
                         start: d.start,
                         length: d.length,
-                        search: d.search.value
+                        search: d.search.value,
+                        status: this.filters.status,
+                        from_date: this.filters.fromDate,
+                        to_date: this.filters.toDate
                     };
-                },
-                error: function(xhr, error, thrown) {
-                    console.error('DataTables AJAX error:', error, thrown);
                 }
             },
             columns: this.getColumns(),
             order: [[0, 'asc']],
             pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
             responsive: true,
             language: {
-                processing: 'Processing...',
-                emptyTable: 'No data available',
-                zeroRecords: 'No matching records found'
+                processing: '<div class="spinner-border spinner-border-sm" role="status"></div> Processing...',
+                emptyTable: 'No proposals found',
+                zeroRecords: 'No matching proposals found',
+                info: 'Showing _START_ to _END_ of _TOTAL_ proposals',
+                infoEmpty: 'Showing 0 to 0 of 0 proposals',
+                infoFiltered: '(filtered from _MAX_ total proposals)',
+                search: '',
+                searchPlaceholder: 'Search...',
+                paginate: {
+                    first: 'First',
+                    last: 'Last',
+                    next: 'Next',
+                    previous: 'Previous'
+                }
             }
         });
     }
@@ -65,19 +79,14 @@ class DatatableDashboard {
         const headers = this.element.querySelectorAll('thead th');
 
         headers.forEach(header => {
-            const field = header.getAttribute('data-data');
-            if (!field) {
-                console.warn('Table header missing data-data attribute:', header);
-            }
             columns.push({
-                data: field,
+                data: header.getAttribute('data-data'),
                 orderable: true,
                 searchable: true,
-                defaultContent: '' // Handle null values
+                defaultContent: ''
             });
         });
 
-        console.log('Configured columns:', columns);
         return columns;
     }
 
@@ -90,30 +99,134 @@ class DatatableDashboard {
             });
         }
 
-        // Export button
+        // Export Excel button
         const exportBtn = this.element.querySelector('#exportExcel');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
                 this.exportToExcel();
             });
         }
+
+        // Clear Filters button
+        const clearFiltersBtn = this.element.querySelector('#clearFilters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                this.clearFilters();
+            });
+        }
+
+        // Status filter
+        const statusFilter = this.element.querySelector('#statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.filters.status = Array.from(e.target.selectedOptions).map(option => option.value);
+                this.applyFilters();
+            });
+        }
+
+        // From date filter
+        const fromDateFilter = this.element.querySelector('#fromDateFilter');
+        if (fromDateFilter) {
+            fromDateFilter.addEventListener('change', (e) => {
+                this.filters.fromDate = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        // To date filter
+        const toDateFilter = this.element.querySelector('#toDateFilter');
+        if (toDateFilter) {
+            toDateFilter.addEventListener('change', (e) => {
+                this.filters.toDate = e.target.value;
+                this.applyFilters();
+            });
+        }
+
+        // Search input
+        const searchInput = this.element.querySelector('#searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', (e) => {
+                // Use debounce to avoid too many requests
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    this.filters.search = e.target.value;
+                    this.applyFilters();
+                }, 500);
+            });
+        }
+
+        // Page length select
+        const pageLengthSelect = this.element.querySelector('#pageLengthSelect');
+        if (pageLengthSelect) {
+            pageLengthSelect.addEventListener('change', (e) => {
+                this.table.page.len(e.target.value).draw();
+            });
+        }
+    }
+
+    applyFilters() {
+        console.log('Applying filters:', this.filters);
+        this.table.ajax.reload();
+    }
+
+    clearFilters() {
+        // Reset filter values
+        this.filters = {
+            status: [],
+            fromDate: '',
+            toDate: '',
+            search: ''
+        };
+
+        // Reset UI elements
+        const statusFilter = this.element.querySelector('#statusFilter');
+        if (statusFilter) {
+            statusFilter.selectedIndex = -1;
+        }
+
+        const fromDateFilter = this.element.querySelector('#fromDateFilter');
+        if (fromDateFilter) {
+            fromDateFilter.value = '';
+        }
+
+        const toDateFilter = this.element.querySelector('#toDateFilter');
+        if (toDateFilter) {
+            toDateFilter.value = '';
+        }
+
+        const searchInput = this.element.querySelector('#searchInput');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        // Reload table
+        this.table.ajax.reload();
     }
 
     exportToExcel() {
-        const searchTerm = this.table.search();
-        const exportUrl = `${this.apiUrl}?format=xlsx&search=${encodeURIComponent(searchTerm)}`;
+        const params = new URLSearchParams({
+            format: 'xlsx',
+            search: this.filters.search,
+            status: this.filters.status.join(','),
+            from_date: this.filters.fromDate,
+            to_date: this.filters.toDate
+        });
+
+        const exportUrl = `${this.apiUrl}?${params.toString()}`;
         window.open(exportUrl, '_blank');
+    }
+
+    destroy() {
+        if (this.table) {
+            this.table.destroy();
+        }
     }
 }
 
-// Initialize with safety checks
+// Initialize all datatable dashboards
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof $ === 'undefined') {
-        console.error('jQuery not loaded');
-        return;
-    }
-    if (typeof $.fn.DataTable === 'undefined') {
-        console.error('DataTables not loaded');
+    if (typeof $ === 'undefined' || typeof $.fn.DataTable === 'undefined') {
+        console.error('Required libraries not loaded');
         return;
     }
 
