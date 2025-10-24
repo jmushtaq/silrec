@@ -162,6 +162,13 @@ class DatatableDashboard {
                 this.table.page.len(e.target.value).draw();
             });
         }
+
+        // In initializeTable or bindEvents:
+        $('#statusFilter').select2({
+            placeholder: "Select statuses...",
+            width: '100%'
+        });
+
     }
 
     applyFilters() {
