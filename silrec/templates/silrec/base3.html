@@ -23,21 +23,9 @@
         {% block header_top_menu %}
         {% endblock %}
         {% block extra_css %}
-            <link rel="stylesheet" href="{% static 'silrec/css/base.css' %}?v={{build_tag}}">
-            {% if not use_vite_dev_server %}
-            <link rel="stylesheet" href="{% static 'silrec_vue/css/main.css' %}?v={{ build_tag }}" />
-            {% endif %}
         {% endblock %}
 
         {% block custom_js %}
-            <script language="javascript">
-            var env = {
-                "kmi_server_url": "{{ KMI_SERVER_URL }}",
-                "gis_server_url": "{{ GIS_SERVER_URL }}"
-            }
-
-            </script>
-            <script type="module" src="{% vite_asset_url vue3_entry_script %}?v={{ build_tag }}"></script>
         {% endblock %}
 
         {% block menu_items_left_brand %}
