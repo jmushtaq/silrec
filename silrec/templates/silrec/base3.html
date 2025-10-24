@@ -1,0 +1,69 @@
+{% extends "webtemplate_dbca/base_b5.html" %}
+{% load static %}
+{% load django_vite %}
+
+{% load users %}
+{% load utils %}
+{% is_internal as is_internal_login %}
+{% is_silrec_admin as is_silrec_admin_user %}
+{% system_name_short as short_name %}
+{% dept_name as department_name %}
+{% system_name as system_name %}
+{% system_name_short as system_name_short %}
+{% support_email as support_email %}
+{% build_tag as build_tag %}
+
+<!DOCTYPE html>
+<html lang="en">
+    {% block extra_hidden_inputs %}
+        <link rel="icon" href="{% static 'favicon.ico' %}">
+    {% endblock %}
+
+    <body>
+        {% block header_top_menu %}
+        {% endblock %}
+        {% block extra_css %}
+            <link rel="stylesheet" href="{% static 'silrec/css/base.css' %}?v={{build_tag}}">
+            {% if not use_vite_dev_server %}
+            <link rel="stylesheet" href="{% static 'silrec_vue/css/main.css' %}?v={{ build_tag }}" />
+            {% endif %}
+        {% endblock %}
+
+        {% block custom_js %}
+            <script language="javascript">
+            var env = {
+                "kmi_server_url": "{{ KMI_SERVER_URL }}",
+                "gis_server_url": "{{ GIS_SERVER_URL }}"
+            }
+
+            </script>
+            <script type="module" src="{% vite_asset_url vue3_entry_script %}?v={{ build_tag }}"></script>
+        {% endblock %}
+
+        {% block menu_items_left_brand %}
+            {% is_internal as is_internal_login %}
+            <div class="navbar-nav">
+                    <div class="nav-item">
+                        <a class="nav-link" href="{% url 'home'%}"><img src="/static/img/pwl_icon.png">
+                            {% if is_internal_login %}
+                                Forest Blocks
+                            {% else %}
+                                Home
+                            {% endif %}
+                        </a>
+                    </div>
+            </div>
+        {% endblock %}
+
+        {% block menu_items2_right %}
+        {% if request.user.is_authenticated %}
+
+        {% else %}
+           <a href="/ssologin" class="btn btn-primary btn-sm">Login</a>
+        {% endif %}
+       {% endblock %}
+
+        {% block menu_spacer %}
+        {% endblock %}
+    </body>
+</html>
