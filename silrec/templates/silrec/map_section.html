@@ -1,0 +1,17 @@
+<div class="content-container">
+    <div class="card mb-3">
+        <div class="card-header" data-bs-toggle="collapse" href="#mapContent" role="button" aria-expanded="true" aria-controls="mapContent" style="cursor: pointer;">
+            <h5 class="mb-0 d-flex align-items-center">
+                <span class="toggle-icon me-2">▼</span>
+                Map Section
+            </h5>
+        </div>
+        <div class="collapse show" id="mapContent">
+            <div class="card-body">
+                <h3>Interactive Map</h3>
+                <p>Explore the map of Western Australia.</p>
+                {% include 'map/map_component.html' %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -207,27 +207,6 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
         (PROCESSING_STATUS_DISCARDED, "Discarded"),
     )
 
-    # List of statuses from above that allow a customer to view a proposal (read-only)
-#    CUSTOMER_VIEWABLE_STATE = [
-#        PROCESSING_STATUS_WITH_ASSESSOR,
-#        PROCESSING_STATUS_WITH_ASSESSOR_CONDITIONS,
-#        PROCESSING_STATUS_WITH_REFERRAL,
-#        PROCESSING_STATUS_WITH_APPROVER,
-#        PROCESSING_STATUS_APPROVED_REGISTRATION_OF_INTEREST,
-#        PROCESSING_STATUS_APPROVED_COMPETITIVE_PROCESS,
-#        PROCESSING_STATUS_APPROVED_EDITING_INVOICING,
-#        PROCESSING_STATUS_APPROVED,
-#        PROCESSING_STATUS_DECLINED,
-#        PROCESSING_STATUS_DISCARDED,
-#    ]
-#
-#    OFFICER_PROCESSABLE_STATE = [
-#        PROCESSING_STATUS_WITH_ASSESSOR,
-#        PROCESSING_STATUS_WITH_ASSESSOR_CONDITIONS,
-#        PROCESSING_STATUS_WITH_REFERRAL,  # <-- Be aware
-#        PROCESSING_STATUS_WITH_APPROVER,
-#    ]
-#
     COMPLIANCE_CHECK_STATUS_CHOICES = (
         ("not_checked", "Not Checked"),
         ("awaiting_returns", "Awaiting Returns"),
@@ -249,9 +228,6 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
     lodgement_number = models.CharField(max_length=9, blank=True, default='')
     lodgement_date = models.DateTimeField(blank=True, null=True)
     submitter = models.IntegerField(null=True)  # EmailUserRO
-#    assigned_officer = models.IntegerField(null=True)  # EmailUserRO
-#    assigned_approver = models.IntegerField(null=True)  # EmailUserRO
-#    approved_by = models.IntegerField(null=True)  # EmailUserRO
     processing_status = models.CharField(
         "Processing Status",
         max_length=35,
@@ -259,16 +235,9 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
         default=PROCESSING_STATUS_CHOICES[0][0],
     )
     prev_processing_status = models.CharField(max_length=30, blank=True, null=True)
-#    review_status = models.CharField(
-#        "Review Status",
-#        max_length=30,
-#        choices=REVIEW_STATUS_CHOICES,
-#        default=REVIEW_STATUS_CHOICES[0][0],
-#    )
     previous_application = models.ForeignKey(
         "self", blank=True, null=True, on_delete=models.SET_NULL
     )
-    #proposed_decline_status = models.BooleanField(default=False)
     # Special Fields
     title = models.CharField(max_length=255, null=True, blank=True)
     application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)

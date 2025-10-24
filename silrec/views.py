@@ -41,6 +41,7 @@ class InternalView(UserPassesTestMixin, TemplateView):
     #template_name = 'silrec/base_ll.html'
     #template_name = 'silrec/dash/index_ll.html'
     template_name = 'silrec/dash/index3.html'
+    #template_name = 'silrec/test_bs.html'
 
     def test_func(self):
         return is_internal(self.request)
