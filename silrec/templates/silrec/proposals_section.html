@@ -1,26 +1,17 @@
 <div class="content-container">
-    <div class="card mb-3">
-        <div class="card-header" data-bs-toggle="collapse" href="#proposalsContent" role="button" aria-expanded="true" aria-controls="proposalsContent" style="cursor: pointer;">
-            <h5 class="mb-0 d-flex align-items-center">
-                <span class="toggle-icon me-2">▼</span>
-                Proposals Section
+    <div class="card mb-3 section-toggle">
+        <div class="card-header" data-bs-toggle="collapse" data-bs-target="#proposalsContent" aria-expanded="true" aria-controls="proposalsContent" style="cursor: pointer;">
+            <h5 class="mb-0">
+                <i class="bi bi-chevron-down toggle-icon"></i>
+                Proposals Dashboard
             </h5>
         </div>
         <div class="collapse show" id="proposalsContent">
             <div class="card-body">
-                <h3>Proposals</h3>
-                <p>Your proposals content will go here.</p>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Proposal List</h5>
-                        <p class="card-text">This is where you can display your proposals, forms, or any other content related to proposals.</p>
-                        <ul class="list-group">
-                            <li class="list-group-item">Proposal 1</li>
-                            <li class="list-group-item">Proposal 2</li>
-                            <li class="list-group-item">Proposal 3</li>
-                        </ul>
-                    </div>
-                </div>
+                {% comment %}
+                {% include 'datatable_dashboard.html' with model_name="proposal" api_url="/api/proposal-datatable/" title="Proposals Overview" columns=proposal_columns table_id="proposals-table" %}
+                {% endcomment %}
+                {% include 'datatable_dashboard.html' with model_name="proposal" api_url="/api/proposal-datatable/" title="Proposals Overview" table_id="proposals-table" %}
             </div>
         </div>
     </div>

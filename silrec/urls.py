@@ -20,6 +20,8 @@ from silrec.components.lookups import api as lookup_tbls_api
 from silrec.components.forest_blocks import api as forest_blocks_api
 from silrec.components.main import api as main_api
 from silrec.components.proposals import api as proposal_api
+#from silrec.components.proposals import views as proposal_views
+from silrec.components.proposals.views import ProposalDashboardView
 #from sqs.components.gisquery import api as gisquery_api
 #from sqs.components.gisquery import views as gisquery_views
 
@@ -60,7 +62,7 @@ if settings.INCLUDE_ROOT_VIEW:
 
 #router.register(r"users", users_api.UserViewSet)
 router.register(r'users', users_api.UserViewSet, basename='users')
-router.register("proposal", proposal_api.ProposalViewSet, basename="proposal")
+#router.register("proposal", proposal_api.ProposalViewSet, basename="proposal")
 #router.register(r"lookup_tbls", lookup_tbls_api.MainViewSet, basename="lookup_tbls")
 router.register(r'cohorts', forest_blocks_api.CohortViewSet, basename='cohorts')
 router.register(r'treatments', forest_blocks_api.TreatmentViewSet, basename='treatments')
@@ -70,9 +72,16 @@ router.register(r'polygon3', forest_blocks_api.PolygonGeometryViewSet, basename=
 router.register(r'polygoncohorts', forest_blocks_api.PolygonCohortViewSet, basename='polygoncohorts')
 
 router.register(r'ply_paginated',forest_blocks_api.PolygonPaginatedViewSet,"ply_paginated")
-router.register(r"proposal_paginated", proposal_api.ProposalPaginatedViewSet, basename="proposal_paginated")
+#router.register(r"proposal_paginated", proposal_api.ProposalPaginatedViewSet, basename="proposal_paginated")
 
 router.register(r"application_types", main_api.ApplicationTypeViewSet)
+
+# Django OpenLayers
+#router.register(r'proposal-datatable', proposal_api.ProposalDatatableViewSet, basename='proposal-datatable')
+#urlpatterns = [
+#    path('api/proposal-datatable/', ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
+#]
+
 
 api_patterns = [
     #re_path(r'api/', include(router.urls)),
@@ -81,7 +90,7 @@ api_patterns = [
     #re_path(r"^api/user$", users_api.UserViewSet.as_view(), name="get-user"),
     #re_path(r"^api/cohorts/<int:cohort_id>/get_cohort$", forest_blocks_api.CohortViewSet.as_view({'get': 'get_cohort'}), name="get-cohort"),
     #re_path(r'^api/cohorts/<int:cohort_id>/get_cohort$', forest_blocks_api.CohortViewSet.as_view({'get': 'get_cohort'}), name='get-cohort'),
-    re_path(r"^api/proposal_type$", proposal_api.GetProposalType.as_view(), name="get-proposal-type"),
+#    re_path(r"^api/proposal_type$", proposal_api.GetProposalType.as_view(), name="get-proposal-type"),
 
 ]
 
@@ -95,6 +104,7 @@ urlpatterns = [
     #re_path(r'^$', TemplateView.as_view(template_name='base.html'), name='home'),
     #re_path(r'^$', views.SilrecRoutingView.as_view(), name='home'),
 
+    #re_path(r'^internal/dash/', ProposalDashboardView.as_view(), name='proposal-dashboard-view'),
     re_path(r'^internal/', views.InternalView.as_view(), name='internal'),
     re_path(r'^external/', views.ExternalView.as_view(), name='external'),
     re_path(r'^contact/', views.SilrecContactView.as_view(), name='contact'),
@@ -106,11 +116,12 @@ urlpatterns = [
         views.InternalProposalView.as_view(),
         name="internal-proposal-detail",
     ),
-    re_path(
-        r"^api/application_statuses_dict$",
-        proposal_api.GetApplicationStatusesDict.as_view(),
-        name="get-application-statuses-dict",
-    ),
+    re_path('api/proposal-datatable/', proposal_api.ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
+#    re_path(
+#        r"^api/application_statuses_dict$",
+#        proposal_api.GetApplicationStatusesDict.as_view(),
+#        name="get-application-statuses-dict",
+#    ),
 ]
 
 if settings.ENABLE_DJANGO_LOGIN:

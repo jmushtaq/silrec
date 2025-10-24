@@ -17,33 +17,7 @@
     <div class="tab-content" id="pills-tabContent">
         <!-- Proposals Tab -->
         <div class="tab-pane fade show active" id="pills-proposals" role="tabpanel" aria-labelledby="pills-proposals-tab">
-<div class="content-container">
-    <div class="card mb-3">
-        <div class="card-header" data-bs-toggle="collapse" href="#proposalsContent" role="button" aria-expanded="true" aria-controls="proposalsContent" style="cursor: pointer;">
-            <h5 class="mb-0 d-flex align-items-center">
-                <span class="toggle-icon me-2">▼</span>
-                Proposals Section
-            </h5>
-        </div>
-        <div class="collapse show" id="proposalsContent">
-            <div class="card-body">
-                <h3>Proposals</h3>
-                <p>Your proposals content will go here.</p>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Proposal List</h5>
-                        <p class="card-text">This is where you can display your proposals, forms, or any other content related to proposals.</p>
-                        <ul class="list-group">
-                            <li class="list-group-item">Proposal 1</li>
-                            <li class="list-group-item">Proposal 2</li>
-                            <li class="list-group-item">Proposal 3</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+            {% include 'proposals_section.html' %}
         </div>
 
         <!-- Map Tab -->
