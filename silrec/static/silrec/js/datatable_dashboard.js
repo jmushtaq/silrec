@@ -12,13 +12,49 @@ class DatatableDashboard {
         this.init();
     }
 
-    init() {
+    async init() {
         try {
+            await this.loadStatusOptions();
             this.initializeTable();
             this.bindEvents();
             console.log('DataTable dashboard initialized successfully');
         } catch (error) {
             console.error('Error initializing DataTable:', error);
+        }
+    }
+
+    async loadStatusOptions() {
+        try {
+            // Use the new status_choices endpoint
+            const response = await fetch('/api/proposals/status_choices/');
+            if (!response.ok) {
+                throw new Error('Failed to load status options');
+            }
+
+            const statusOptions = await response.json();
+            const statusFilter = this.element.querySelector('#statusFilter');
+
+            if (statusFilter && statusOptions.length > 0) {
+                // Clear existing options
+                statusFilter.innerHTML = '';
+
+                // Add new options
+                statusOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option.value;
+                    optionElement.textContent = option.text;
+                    statusFilter.appendChild(optionElement);
+                });
+
+                console.log('Loaded status options from API:', statusOptions);
+            } else {
+                console.warn('No status options found or status filter not found');
+                this.loadDefaultStatusOptions();
+            }
+        } catch (error) {
+            console.error('Error loading status options:', error);
+            // Fallback to default options if API fails
+            this.loadDefaultStatusOptions();
         }
     }
 

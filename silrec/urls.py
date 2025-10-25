@@ -58,7 +58,7 @@ router = routers.DefaultRouter()
 router.include_root_view = False
 
 if settings.INCLUDE_ROOT_VIEW:
-        router.include_root_view = True
+    router.include_root_view = True
 
 #router.register(r"users", users_api.UserViewSet)
 router.register(r'users', users_api.UserViewSet, basename='users')
@@ -75,6 +75,16 @@ router.register(r'ply_paginated',forest_blocks_api.PolygonPaginatedViewSet,"ply_
 #router.register(r"proposal_paginated", proposal_api.ProposalPaginatedViewSet, basename="proposal_paginated")
 
 router.register(r"application_types", main_api.ApplicationTypeViewSet)
+
+router.register(r'proposals', proposal_api.ProposalViewSet, basename='proposal')
+
+
+# The URLs will now be:
+# GET /api/proposals/ - List all proposals (using ProposalSerializer)
+# GET /api/proposals/{id}/ - Get specific proposal
+# PUT /api/proposals/{id}/ - Update proposal
+# GET /api/proposals/status_choices/ - Get status choices for filter
+# GET /api/proposals/datatable/ - DataTable endpoint
 
 # Django OpenLayers
 #router.register(r'proposal-datatable', proposal_api.ProposalDatatableViewSet, basename='proposal-datatable')
@@ -116,7 +126,9 @@ urlpatterns = [
         views.InternalProposalView.as_view(),
         name="internal-proposal-detail",
     ),
-    re_path('api/proposal-datatable/', proposal_api.ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
+    #re_path('api/proposal-datatable/', proposal_api.ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
+    #re_path('api/', include(router.urls)),
+
 #    re_path(
 #        r"^api/application_statuses_dict$",
 #        proposal_api.GetApplicationStatusesDict.as_view(),
