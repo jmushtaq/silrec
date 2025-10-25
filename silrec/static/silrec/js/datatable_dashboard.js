@@ -143,11 +143,11 @@ class DatatableDashboard {
             });
         }
 
-        // Clear Filters button
-        const clearFiltersBtn = this.element.querySelector('#clearFilters');
-        if (clearFiltersBtn) {
-            clearFiltersBtn.addEventListener('click', () => {
-                this.clearFilters();
+        // Export Excel form submission - sync hidden fields
+        const exportForm = this.element.querySelector('#exportExcelForm');
+        if (exportForm) {
+            exportForm.addEventListener('submit', (e) => {
+                this.syncExportForm();
             });
         }
 
@@ -199,6 +199,19 @@ class DatatableDashboard {
             });
         }
 
+        const clearFiltersBtn = this.element.querySelector('#clearFilters');
+        console.log('Clear Filters button found:', clearFiltersBtn);
+
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', (e) => {
+                console.log('Clear Filters button CLICKED!');
+                e.preventDefault();
+                this.clearFilters();
+            });
+        } else {
+            console.error('Clear Filters button not found!');
+        }
+
         // In initializeTable or bindEvents:
         $('#statusFilter').select2({
             placeholder: "Select statuses...",
@@ -213,6 +226,8 @@ class DatatableDashboard {
     }
 
     clearFilters() {
+        console.log('clearFilters called - current filters:', this.filters);
+
         // Reset filter values
         this.filters = {
             status: [],
@@ -221,65 +236,56 @@ class DatatableDashboard {
             search: ''
         };
 
+        console.log('clearFilters - reset filters to:', this.filters);
+
         // Reset UI elements - Select2 requires special handling
         const statusFilter = $('#statusFilter');
         if (statusFilter.length && $.fn.select2) {
+            console.log('Clearing Select2 status filter');
             statusFilter.val(null).trigger('change.select2');
         }
 
+        // Reset form inputs
         const fromDateFilter = this.element.querySelector('#fromDateFilter');
         if (fromDateFilter) {
+            console.log('Clearing fromDateFilter, current value:', fromDateFilter.value);
             fromDateFilter.value = '';
         }
 
         const toDateFilter = this.element.querySelector('#toDateFilter');
         if (toDateFilter) {
+            console.log('Clearing toDateFilter, current value:', toDateFilter.value);
             toDateFilter.value = '';
         }
 
         const searchInput = this.element.querySelector('#searchInput');
         if (searchInput) {
+            console.log('Clearing searchInput, current value:', searchInput.value);
             searchInput.value = '';
         }
+
+        // Also clear the export form hidden fields
+        this.syncExportForm();
+
+        console.log('clearFilters - reloading table with filters:', this.filters);
 
         // Reload table
         this.table.ajax.reload();
     }
 
-    exportToExcel() {
-        try {
-            // Construct the base URL for export
-            let baseUrl = this.apiUrl.replace('/datatable/', '/export_excel/');
+    syncExportForm() {
+        // Sync current filter values to the export form hidden fields
+        const exportSearch = this.element.querySelector('#exportSearch');
+        const exportStatus = this.element.querySelector('#exportStatus');
+        const exportFromDate = this.element.querySelector('#exportFromDate');
+        const exportToDate = this.element.querySelector('#exportToDate');
 
-            // Build parameters object
-            const params = {
-                search: this.filters.search || '',
-                from_date: this.filters.fromDate || '',
-                to_date: this.filters.toDate || '',
-            };
+        if (exportSearch) exportSearch.value = this.filters.search || '';
+        if (exportStatus) exportStatus.value = this.filters.status.join(',');
+        if (exportFromDate) exportFromDate.value = this.filters.fromDate || '';
+        if (exportToDate) exportToDate.value = this.filters.toDate || '';
 
-            // Add status as comma-separated string (alternative approach)
-            if (this.filters.status && this.filters.status.length > 0) {
-                params.status = this.filters.status.join(',');
-            }
-
-            // Build URL with parameters
-            const queryString = Object.keys(params)
-                .filter(key => params[key] !== '') // Remove empty params
-                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-                .join('&');
-
-            const exportUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-
-            console.log('Exporting to:', exportUrl);
-
-            // Direct download
-            window.location.href = exportUrl;
-
-        } catch (error) {
-            console.error('Export error:', error);
-            alert('Error generating Excel export: ' + error.message);
-        }
+        console.log('Syncing export form with filters:', this.filters);
     }
 
     destroy() {

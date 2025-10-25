@@ -8,6 +8,103 @@ from silrec.components.proposals.models import Proposal
 #from silrec.components.proposals.utils import test_proposal_emails
 from django.views.generic import TemplateView
 
+import pandas as pd
+import openpyxl
+from django.http import HttpResponse
+from django.views import View
+from django.db.models import Q
+from datetime import datetime
+from .models import Proposal
+
+
+class ProposalExcelExportView(View):
+    def get(self, request):
+        """Export proposals to Excel with filtering"""
+        try:
+            # Extract filter parameters from request
+            search_value = request.GET.get('search', '')
+            status_filter = request.GET.getlist('status', []) or request.GET.get('status', '').split(',')
+            from_date = request.GET.get('from_date', '')
+            to_date = request.GET.get('to_date', '')
+
+            # Remove empty strings from status filter
+            status_filter = [s for s in status_filter if s]
+
+            print(f"Export filters - Search: '{search_value}', Status: {status_filter}, From: {from_date}, To: {to_date}")
+
+            # Apply filters to queryset
+            queryset = Proposal.objects.select_related('proposal_type').all()
+
+            if search_value:
+                queryset = queryset.filter(
+                    Q(lodgement_number__icontains=search_value) |
+                    Q(title__icontains=search_value) |
+                    Q(proposal_type__description__icontains=search_value) |
+                    Q(processing_status__icontains=search_value)
+                )
+
+            if status_filter:
+                queryset = queryset.filter(processing_status__in=status_filter)
+
+            if from_date:
+                try:
+                    from_date_obj = datetime.strptime(from_date, '%Y-%m-%d').date()
+                    queryset = queryset.filter(lodgement_date__gte=from_date_obj)
+                except ValueError:
+                    print(f"Invalid from_date format: {from_date}")
+
+            if to_date:
+                try:
+                    to_date_obj = datetime.strptime(to_date, '%Y-%m-%d').date()
+                    queryset = queryset.filter(lodgement_date__lte=to_date_obj)
+                except ValueError:
+                    print(f"Invalid to_date format: {to_date}")
+
+            # Prepare data for Excel
+            data = []
+            for proposal in queryset:
+                data.append({
+                    'Lodgement Number': proposal.lodgement_number or '',
+                    'Title': proposal.title or '',
+                    'Proposal Type': proposal.proposal_type.description if proposal.proposal_type else '',
+                    'Lodgement Date': proposal.lodgement_date.strftime('%Y-%m-%d %H:%M') if proposal.lodgement_date else '',
+                    'Status': proposal.get_processing_status_display(),
+                })
+
+            if not data:
+                return HttpResponse("No data to export", status=404)
+
+            # Create DataFrame and Excel response
+            df = pd.DataFrame(data)
+
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="proposals_export.xlsx"'
+
+            with pd.ExcelWriter(response, engine='openpyxl') as writer:
+                df.to_excel(writer, sheet_name='Proposals', index=False)
+
+                # Auto-adjust column widths
+                worksheet = writer.sheets['Proposals']
+                for column in worksheet.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter
+                    for cell in column:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(str(cell.value))
+                        except:
+                            pass
+                    adjusted_width = min((max_length + 2), 50)
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
+
+            return response
+
+        except Exception as e:
+            print(f"Excel export error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return HttpResponse(f"Error generating Excel export: {str(e)}", status=500)
+
 
 class ProposalDashboardView(TemplateView):
     #template_name = 'proposals_section.html'

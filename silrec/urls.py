@@ -21,7 +21,7 @@ from silrec.components.forest_blocks import api as forest_blocks_api
 from silrec.components.main import api as main_api
 from silrec.components.proposals import api as proposal_api
 #from silrec.components.proposals import views as proposal_views
-from silrec.components.proposals.views import ProposalDashboardView
+from silrec.components.proposals.views import ProposalExcelExportView
 #from sqs.components.gisquery import api as gisquery_api
 #from sqs.components.gisquery import views as gisquery_views
 
@@ -128,6 +128,7 @@ urlpatterns = [
     ),
     #re_path('api/proposal-datatable/', proposal_api.ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
     #re_path('api/', include(router.urls)),
+    re_path('export/proposals/excel/', ProposalExcelExportView.as_view(), name='export_proposals_excel'),
 
 #    re_path(
 #        r"^api/application_statuses_dict$",

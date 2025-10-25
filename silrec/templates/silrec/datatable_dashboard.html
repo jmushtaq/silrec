@@ -11,9 +11,18 @@
                         <button type="button" class="btn btn-outline-secondary btn-sm" id="refreshTable">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </button>
-                        <button type="button" class="btn btn-outline-success btn-sm" id="exportExcel">
-                            <i class="bi bi-file-earmark-excel"></i> Export Excel
-                        </button>
+
+                        <!-- Export Excel Form -->
+                        <form method="get" action="{% url 'export_proposals_excel' %}" id="exportExcelForm" style="display: inline;">
+                            <input type="hidden" name="search" id="exportSearch">
+                            <input type="hidden" name="status" id="exportStatus">
+                            <input type="hidden" name="from_date" id="exportFromDate">
+                            <input type="hidden" name="to_date" id="exportToDate">
+                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-file-earmark-excel"></i> Export Excel
+                            </button>
+                        </form>
+
                         <button type="button" class="btn btn-outline-danger btn-sm" id="clearFilters">
                             <i class="bi bi-x-circle"></i> Clear Filters
                         </button>
