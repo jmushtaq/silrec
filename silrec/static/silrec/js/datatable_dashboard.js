@@ -221,10 +221,10 @@ class DatatableDashboard {
             search: ''
         };
 
-        // Reset UI elements
-        const statusFilter = this.element.querySelector('#statusFilter');
-        if (statusFilter) {
-            statusFilter.selectedIndex = -1;
+        // Reset UI elements - Select2 requires special handling
+        const statusFilter = $('#statusFilter');
+        if (statusFilter.length && $.fn.select2) {
+            statusFilter.val(null).trigger('change.select2');
         }
 
         const fromDateFilter = this.element.querySelector('#fromDateFilter');
@@ -247,16 +247,39 @@ class DatatableDashboard {
     }
 
     exportToExcel() {
-        const params = new URLSearchParams({
-            format: 'xlsx',
-            search: this.filters.search,
-            status: this.filters.status.join(','),
-            from_date: this.filters.fromDate,
-            to_date: this.filters.toDate
-        });
+        try {
+            // Construct the base URL for export
+            let baseUrl = this.apiUrl.replace('/datatable/', '/export_excel/');
 
-        const exportUrl = `${this.apiUrl}?${params.toString()}`;
-        window.open(exportUrl, '_blank');
+            // Build parameters object
+            const params = {
+                search: this.filters.search || '',
+                from_date: this.filters.fromDate || '',
+                to_date: this.filters.toDate || '',
+            };
+
+            // Add status as comma-separated string (alternative approach)
+            if (this.filters.status && this.filters.status.length > 0) {
+                params.status = this.filters.status.join(',');
+            }
+
+            // Build URL with parameters
+            const queryString = Object.keys(params)
+                .filter(key => params[key] !== '') // Remove empty params
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .join('&');
+
+            const exportUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+            console.log('Exporting to:', exportUrl);
+
+            // Direct download
+            window.location.href = exportUrl;
+
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Error generating Excel export: ' + error.message);
+        }
     }
 
     destroy() {
