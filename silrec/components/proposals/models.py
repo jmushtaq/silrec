@@ -242,8 +242,9 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
     application_type = models.ForeignKey(ApplicationType, on_delete=models.PROTECT)
 
-    shapefile_json = JSONField('Source/Submitter (multi) polygon geometry', blank=True, null=True)
-    shp_processed_json = JSONField('Source Polygon intersected with hist and split (multi) polygon geometry', blank=True, null=True)
+    shapefile_json               = JSONField('Source/Submitter (multi) polygon geometry', blank=True, null=True)
+    geojson_data_processed       = JSONField('Source Polygon intersected with hist and split (multi) polygon geometry final result', blank=True, null=True)
+    geojson_data_processed_iters = JSONField('Source Polygon Intersected with hist and split (multi) polygon geometry - all iterations', blank=True, null=True)
     migrated = models.BooleanField(default=False)
 
     class Meta:
