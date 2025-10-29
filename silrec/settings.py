@@ -176,12 +176,17 @@ INSTALLED_APPS = [
     'rest_framework',
     #'rest_framework.authtoken',
     'rest_framework_gis',
+    'crispy_forms',
+    'crispy_bootstrap4'
     #'rest_framework_swagger',
     #"debug_toolbar",
     #'pympler',
 
     #'appmonitor_client',
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4" # Or "bootstrap5", etc.
+CRISPY_TEMPLATE_PACK = "bootstrap4" # Or "bootstrap5", etc.
 
 ADD_REVERSION_ADMIN=True
 

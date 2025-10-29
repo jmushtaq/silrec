@@ -181,6 +181,43 @@ class ProposalType(models.Model):
 #            )
 #        )
 
+
+class ProposalAssessorGroup(models.Model):
+    name = models.CharField(max_length=255)
+    members = models.ManyToManyField(User)
+    default = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = 'silrec'
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        try:
+            default = ProposalAssessorGroup.objects.get(default=True)
+        except ProposalAssessorGroup.DoesNotExist:
+            default = None
+
+        if default and self.default:
+            raise ValidationError('There can only be one default proposal assessor group')
+
+    def member_is_assigned(self, member):
+        for p in self.current_proposals:
+            if p.assigned_officer == member:
+                return True
+        return False
+
+    @property
+    def current_proposals(self):
+        assessable_states = ['with_assessor','with_assessor_tre','with_assessor_requirements']
+        return Proposal.objects.filter(processing_status__in=assessable_states)
+
+    @property
+    def members_email(self):
+        return [i.email for i in self.members.all()]
+
+
 class Proposal(RevisionedMixin, DirtyFieldsMixin):
     #objects = ProposalManager()
 
@@ -207,19 +244,13 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
         (PROCESSING_STATUS_DISCARDED, "Discarded"),
     )
 
-    COMPLIANCE_CHECK_STATUS_CHOICES = (
-        ("not_checked", "Not Checked"),
-        ("awaiting_returns", "Awaiting Returns"),
-        ("completed", "Completed"),
-        ("accepted", "Accepted"),
-    )
+    ASSESSABLE_STATES = [
+        PROCESSING_STATUS_WITH_ASSESSOR,
+        PROCESSING_STATUS_WITH_ASSESSOR_TREATMENTS,
+        PROCESSING_STATUS_WITH_ASSESSOR_TREATMENTS
+    ]
 
-    REVIEW_STATUS_CHOICES = (
-        ("not_reviewed", "Not Reviewed"),
-        ("awaiting_amendments", "Awaiting Amendments"),
-        ("amended", "Amended"),
-        ("accepted", "Accepted"),
-    )
+    REVIEWABLE_STATES = [PROCESSING_STATUS_WITH_REVIEWER]
 
     proposal_type = models.ForeignKey(
         ProposalType, blank=True, null=True, on_delete=models.SET_NULL
@@ -252,15 +283,13 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
         verbose_name = "Proposal"
 
     def save(self, *args, **kwargs):
-        # Clear out the cached
-        #cache.delete(settings.CACHE_KEY_MAP_PROPOSALS)
-
-        # Store the original values of fields we want to keep track of in
         # django reversion before they are overwritten by super() below
         original_processing_status = self._original_state['processing_status']
-        #original_assessor_data = self._original_state['assessor_data']
-        #original_comment_data = self._original_state['comment_data']
 
+        # Handle shapefile JSON data if passed in kwargs
+        shapefile_json = kwargs.pop('shapefile_json', None)
+        if shapefile_json:
+            self.shapefile_json = shapefile_json
         super().save(*args, **kwargs)
 
         if self.lodgement_number == '':
@@ -276,9 +305,34 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
     def submitter_obj(self):
         return User.objects.get(id=self.submitter)
 
+    def __assessor_group(self):
+            return ProposalAssessorGroup.objects.get(default=True)
+
+    def __approver_group(self):
+        return ProposalApproverGroup.objects.get(default=True)
+
     @property
     def can_user_view(self):
         return True
+
+    @property
+    def can_user_edit(self):
+        """ :return: True if the application is in one of the editable status.
+        """
+        return self.customer_status in self.CUSTOMER_EDITABLE_STATE
+
+    @property
+    def can_user_view(self):
+        """ :return: True if the application is in one of the approved status.
+        """
+        return self.customer_status in self.CUSTOMER_VIEWABLE_STATE
+
+    def can_assess(self,user):
+        if self.processing_status in self.ASSESSABLE_STATES:
+            return self.__assessor_group() in user.proposalassessorgroup_set.all()
+        elif self.processing_status in self.REVIEWABLE_STATES:
+            return self.__reviewer_group() in user.proposalreviewergroup_set.all()
+        return False
 
     @property
     def shp_to_gdf(self):

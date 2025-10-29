@@ -1,20 +1,134 @@
 import json
-
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
-from django.views.generic import View
-
-from silrec.components.proposals.models import Proposal
-#from silrec.components.proposals.utils import test_proposal_emails
-from django.views.generic import TemplateView
+from django.urls import reverse_lazy
+from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import View, TemplateView, CreateView, UpdateView
+from django.views import View
+from django.db.models import Q
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 import pandas as pd
 import openpyxl
-from django.http import HttpResponse
-from django.views import View
-from django.db.models import Q
 from datetime import datetime
-from .models import Proposal
+
+from silrec.components.proposals.models import Proposal
+from silrec.components.proposals.forms import ProposalForm
+
+
+class AddProposalView(CreateView):
+    model = Proposal
+    form_class = ProposalForm
+    template_name = 'proposals/proposal_form.html'
+    success_url = reverse_lazy('internal')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.submitter = self.request.user.id
+
+        # Handle shapefile JSON data
+        shapefile_json = self.request.POST.get('shapefile_json')
+        if shapefile_json:
+            try:
+                self.object.shapefile_json = json.loads(shapefile_json)
+            except json.JSONDecodeError:
+                pass
+
+        self.object.save()
+        messages.success(self.request, 'Proposal created successfully!')
+
+        if 'save_continue' in self.request.POST:
+            return redirect('add-proposal')
+        else:
+            return redirect(self.success_url)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Please correct the errors below.')
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mode'] = 'add'
+        context['read_only'] = False
+        return context
+
+
+class ViewProposalView(UserPassesTestMixin, UpdateView):
+    model = Proposal
+    form_class = ProposalForm
+    template_name = 'proposals/proposal_form.html'
+    success_url = reverse_lazy('internal')
+
+    def test_func(self):
+        """Only staff users can view proposals"""
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mode'] = 'view'
+
+        # Check if user can process this proposal
+        proposal = self.get_object()
+        can_process = self.can_process_proposal(proposal)
+        context['read_only'] = not can_process
+        context['can_process'] = can_process
+
+        return context
+
+    def can_process_proposal(self, proposal):
+        """Check if user can process this proposal"""
+        user = self.request.user
+
+        # User must be staff
+        if not user.is_staff:
+            return False
+
+        # Check if proposal is in processable status
+        processable_statuses = ['With Assessor']
+        if proposal.processing_status not in processable_statuses:
+            return False
+
+        # Check user groups and permissions
+        allowed_groups = ['Assessors', 'Reviewers', 'Silrec Admin']
+        user_groups = user.groups.values_list('name', flat=True)
+
+        if (any(group in user_groups for group in allowed_groups) or
+            user.is_superuser):
+            return True
+
+        return False
+
+    def form_valid(self, form):
+        if not self.can_process_proposal(self.get_object()):
+            messages.error(self.request, 'You do not have permission to process this proposal.')
+            return redirect(self.success_url)
+
+        self.object = form.save(commit=False)
+
+        # Handle shapefile JSON data
+        shapefile_json = self.request.POST.get('shapefile_json')
+        if shapefile_json:
+            try:
+                self.object.shapefile_json = json.loads(shapefile_json)
+            except json.JSONDecodeError:
+                pass
+
+        self.object.save()
+        messages.success(self.request, 'Proposal updated successfully!')
+
+        if 'save_continue' in self.request.POST:
+            return redirect('view-proposal', pk=self.object.pk)
+        else:
+            return redirect(self.success_url)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if self.request.method == 'GET':
+            # Set form to read-only if user cannot process
+            if not self.can_process_proposal(self.get_object()):
+                for field in form.fields.values():
+                    field.disabled = True
+        return form
 
 
 class ProposalExcelExportView(View):

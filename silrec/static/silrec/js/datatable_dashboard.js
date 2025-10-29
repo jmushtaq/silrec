@@ -115,15 +115,54 @@ class DatatableDashboard {
         const headers = this.element.querySelectorAll('thead th');
 
         headers.forEach(header => {
-            columns.push({
-                data: header.getAttribute('data-data'),
-                orderable: true,
-                searchable: true,
-                defaultContent: ''
-            });
+            const dataField = header.getAttribute('data-data');
+
+            if (dataField === 'actions') {
+                // Special handling for actions column
+                columns.push({
+                    data: dataField,
+                    orderable: false,
+                    searchable: false,
+                    render: function(data, type, row) {
+                        if (type === 'display') {
+                            return DatatableDashboard.renderActionsColumn(row);
+                        }
+                        return data;
+                    }
+                });
+            } else {
+                columns.push({
+                    data: dataField,
+                    orderable: true,
+                    searchable: true,
+                    defaultContent: ''
+                });
+            }
         });
 
         return columns;
+    }
+
+    static renderActionsColumn(row) {
+        // Check if user can process this proposal
+        console.log('JM3: ' + JSON.stringify(row))
+        const canProcess = row.can_process && row.user_can_process;
+        const isReadOnly = row.is_read_only;
+
+        if (canProcess && !isReadOnly) {
+            return `<div class="action-buttons">
+                <a href="/proposals/view/${row.id}/" class="btn btn-warning btn-sm" title="Process Proposal">
+                    <i class="fas fa-cog"></i> Process
+                </a>
+            </div>`;
+        } else {
+            // Show View button for all other cases
+            return `<div class="action-buttons">
+                <a href="/proposals/view/${row.id}/" class="btn btn-info btn-sm" title="View Proposal">
+                    <i class="fas fa-eye"></i> View
+                </a>
+            </div>`;
+        }
     }
 
     bindEvents() {

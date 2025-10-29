@@ -11,24 +11,22 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
          
         {% block header_js %}
-	    <script src="/static/common_addons/node_modules/jquery/dist/jquery.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/moment/min/moment.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/@popperjs/core/dist/umd/popper.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/daterangepicker/daterangepicker.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/bootstrap/dist/js/bootstrap.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	    <script src="/static/common_addons/node_modules/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+        <script src="/static/common_addons/node_modules/jquery/dist/jquery.js?ver={{ GIT_COMMIT_HASH }}"></script>
+        <script src="/static/common_addons/node_modules/moment/min/moment.min.js?ver={{ GIT_COMMIT_HASH }}"></script>
+        <script src="/static/common_addons/node_modules/@popperjs/core/dist/umd/popper.js?ver={{ GIT_COMMIT_HASH }}"></script>
+        <script src="/static/common_addons/node_modules/daterangepicker/daterangepicker.js?ver={{ GIT_COMMIT_HASH }}"></script>
+        <script src="/static/common_addons/node_modules/bootstrap/dist/js/bootstrap.js?ver={{ GIT_COMMIT_HASH }}"></script>
+        <script src="/static/common_addons/node_modules/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+        {% endblock %}
 
-	{% endblock %}
-
-	{% block header_css %}
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/daterangepicker/daterangepicker.css?ver={{ GIT_COMMIT_HASH }}" />
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap/dist/css/bootstrap.css?ver={{ GIT_COMMIT_HASH }}" />
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-icons/font/bootstrap-icons.css?ver={{ GIT_COMMIT_HASH }}"/>
-	    <link rel="stylesheet" type="text/css" href="/static/css/dbca_b5.css?ver={{ GIT_COMMIT_HASH }}"/>
-	    <link rel="stylesheet" type="text/css" href="/static/css/base_bs5_common.css?ver={{ GIT_COMMIT_HASH }}"/>
-	    <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css?ver={{ GIT_COMMIT_HASH }}"/>
-
-	{% endblock %}
+        {% block header_css %}
+        <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/daterangepicker/daterangepicker.css?ver={{ GIT_COMMIT_HASH }}" />
+        <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap/dist/css/bootstrap.css?ver={{ GIT_COMMIT_HASH }}" />
+        <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-icons/font/bootstrap-icons.css?ver={{ GIT_COMMIT_HASH }}"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/dbca_b5.css?ver={{ GIT_COMMIT_HASH }}"/>
+        <link rel="stylesheet" type="text/css" href="/static/css/base_bs5_common.css?ver={{ GIT_COMMIT_HASH }}"/>
+        <link rel="stylesheet" type="text/css" href="/static/common_addons/node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css?ver={{ GIT_COMMIT_HASH }}"/>
+        {% endblock %}
          
         {% block extra_js %}
         {% endblock %}
@@ -36,7 +34,7 @@
         {% block extra_css %}
         {% endblock %}
 
-	{% block extra_hidden_inputs %}
+        {% block extra_hidden_inputs %}
         {% endblock %}
 
 
@@ -56,7 +54,7 @@
         {% endblock %}
  
         {% block header_top_menu %}
-	      {% if request.user.is_authenticated %}
+          {% if request.user.is_authenticated %}
                   <div class="top_header_bar">
                        <div style='padding: 10px;'>
                           <div class="row">
@@ -103,15 +101,15 @@
                                        <div class="col-lg-3">
                                                <h1 id="site-title" class="site-logo">
                                                   <a href="{% url 'home'%}" >
-							 <img src="/static/img/logo-park-stay-trunc.gif" alt="Department of Parks and Wildlife - Park Stay" class="img-responsive"/>
+                             <img src="/static/img/logo-park-stay-trunc.gif" alt="Department of Parks and Wildlife - Park Stay" class="img-responsive"/>
                                                   </a>
                                                </h1>
                                        </div>
-				       <div class="col-lg-9">
-					     <h1 id="site-title hide-sm" class="site-logo" style="color: white; text-align: left">
+                       <div class="col-lg-9">
+                         <h1 id="site-title hide-sm" class="site-logo" style="color: white; text-align: left">
                                                   {{ SYSTEM_NAME }} 
-					     </h1>
-				       </div>
+                         </h1>
+                       </div>
                                </div>
                            </div>
                        </div>
@@ -128,7 +126,7 @@
                                          <nav class="navbar navbar-expand-lg navbar-light bg-light">
                                            <div class="container-fluid">
                                              {% block menu_items_left_brand %}
-					     <a class="navbar-brand" href="{% url 'home'%}"><img src="{% if template_group == 'parksv2' %}/static/img/parkstay_icon_v2.png{% else %}/static/img/pwl_icon.png{% endif %}">Home</a>
+                         <a class="navbar-brand" href="{% url 'home'%}"><img src="{% if template_group == 'parksv2' %}/static/img/parkstay_icon_v2.png{% else %}/static/img/pwl_icon.png{% endif %}">Home</a>
                                              {% endblock %}
                                              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerTop" aria-controls="navbarTogglerTop" aria-expanded="false" aria-label="Toggle navigation">
                                                <span class="navbar-toggler-icon"></span>
@@ -136,7 +134,7 @@
                                              <div class="collapse navbar-collapse" id="navbarTogglerTop">
                                                <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="navbarTogglerTopLeft">
                                                  {% block menu_items_left %}
-						    {% include 'webtemplate_dbca/includes/primary_menu.html' %}
+                            {% include 'webtemplate_dbca/includes/primary_menu.html' %}
                                                  {% endblock %}
                                                 </ul>
                                                 <ul class="navbar-nav navbar-right" id="navbarTogglerTopRight" >
@@ -163,28 +161,28 @@
                                                    </a>
                                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarScrollingDropdown" id="navbarTogglerTopDropdown">
                                                      <span class='caret-above-menu hidden-sm' style=''><i class="bi bi-caret-up-fill fas ml-2"></i></span>
-						          {% block menu_dropdown %}
-							      {% block menu_extra_dropdown_top %}
-							      {% endblock %}
+                                  {% block menu_dropdown %}
+                                  {% block menu_extra_dropdown_top %}
+                                  {% endblock %}
                                                               {% if request.user.is_staff %}
-							            {% include 'webtemplate_dbca/includes/staff_menu.html' %}
+                                        {% include 'webtemplate_dbca/includes/staff_menu.html' %}
                                                               {% block menu_extra_dropdown_staff_top %}
                                                                     {% include 'webtemplate_dbca/includes/staff_menu_extras.html' %}
-							      {% endblock %}
-							      {% endif %}
+                                  {% endblock %}
+                                  {% endif %}
                                                               <li><hr class="dropdown-divider"></li>
-							      {% block menu_extra_dropdown_bottom %}
-							            {% include 'webtemplate_dbca/includes/menu_bottom.html' %}
-							      {% endblock %}
+                                  {% block menu_extra_dropdown_bottom %}
+                                        {% include 'webtemplate_dbca/includes/menu_bottom.html' %}
+                                  {% endblock %}
                                                               <li><a class="dropdown-item" href="{% url 'logout' %}?next=/">Logout</a></li>
-							  {% endblock %}
+                              {% endblock %}
                                                    </ul>
                                                  </li>
                                                {% endif %}
-					       {% endblock %}
-					       {% block menu_items2_right %}
+                           {% endblock %}
+                           {% block menu_items2_right %}
 
-					       {% endblock %}
+                           {% endblock %}
                                                </ul>
                                              </div>
                                            </div>
@@ -198,10 +196,10 @@
 
         {% endblock %}
         {% block menu_spacer %}
-	<div class='gov_top_spacer'>
-		&nbsp;
-	</div>
-	<br><br><br>
+    <div class='gov_top_spacer'>
+        &nbsp;
+    </div>
+    <br><br><br>
         {% endblock %}
         <div class='body-wrapper'>
 
@@ -213,13 +211,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col-md-12">                        
-			  <BR>
-			  {% for message in messages %}
-			  <div class="alert {{ message.tags }} alert-dismissible shadow fade show" role="alert">      
-			      {{ message | safe }}
-			      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			  </div>
-			  {% endfor %}		    
+              <BR>
+              {% for message in messages %}
+              <div class="alert {{ message.tags }} alert-dismissible shadow fade show" role="alert">      
+                  {{ message | safe }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+              {% endfor %}          
                     </div>
                 </div>
             </div>
@@ -228,9 +226,9 @@
         {% endblock %}
         {% block modals %}
         {% endblock %}
-	{% block footer_js%}
-	<script src="/static/js/base_bs5_common_after.js?ver={{ GIT_COMMIT_HASH }}"></script>
-	{% endblock %}
+    {% block footer_js%}
+    <script src="/static/js/base_bs5_common_after.js?ver={{ GIT_COMMIT_HASH }}"></script>
+    {% endblock %}
         {% block custom_js %}
         {% endblock %}
 

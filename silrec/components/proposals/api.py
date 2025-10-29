@@ -1,6 +1,9 @@
 from django.db.models import Q
 from django.http import HttpResponse
-from datetime import datetime
+from django.utils.decorators import method_decorator
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -17,9 +20,16 @@ from rest_framework.response import Response
 from django.db.models import Q
 from datetime import datetime
 
+from datetime import datetime
 import pandas as pd
+import geopandas as gpd
 import openpyxl
 
+import os
+import tempfile
+import zipfile
+import fiona
+import json
 
 class ProposalViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -31,6 +41,11 @@ class ProposalViewSet(mixins.ListModelMixin,
     def get_queryset(self):
         queryset = super().get_queryset()
         return queryset.select_related('proposal_type', 'previous_application', 'application_type')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     @action(detail=False, methods=['get'])
     def status_choices(self, request):
@@ -143,6 +158,108 @@ class ProposalViewSet(mixins.ListModelMixin,
                 'data': [],
                 'error': str(e)
             }, status=500)
+
+
+class ProposalUploadShapefileViewSet(viewsets.ModelViewSet):
+    queryset = Proposal.objects.all()
+    serializer_class = ProposalSerializer
+
+    @action(detail=False, methods=['post'], url_path='upload_shapefile')
+    def upload_shapefile(self, request):
+        print("Upload shapefile endpoint called")
+        print("User:", request.user)
+        print("User authenticated:", request.user.is_authenticated)
+
+        try:
+            if 'shapefile' not in request.FILES:
+                print("No shapefile in request.FILES")
+                return Response({
+                    'success': False,
+                    'error': 'No shapefile provided'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            shapefile_zip = request.FILES['shapefile']
+            print(f"Received file: {shapefile_zip.name}, size: {shapefile_zip.size}")
+
+            # Create temporary directory
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Extract zip file
+                zip_path = os.path.join(temp_dir, 'shapefile.zip')
+                with open(zip_path, 'wb') as f:
+                    for chunk in shapefile_zip.chunks():
+                        f.write(chunk)
+
+                # Extract contents
+                extract_dir = os.path.join(temp_dir, 'extracted')
+                os.makedirs(extract_dir)
+
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(extract_dir)
+
+                # Find .shp file
+                shp_file = None
+                for file in os.listdir(extract_dir):
+                    if file.endswith('.shp'):
+                        shp_file = os.path.join(extract_dir, file)
+                        break
+
+                if not shp_file:
+                    return Response({
+                        'success': False,
+                        'error': 'No .shp file found in zip archive'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+                print(f"Found shapefile: {shp_file}")
+
+                # Convert to GeoJSON using GeoPandas
+                import ipdb; ipdb.set_trace()
+                geojson_data = self.shapefile_to_geojson(shp_file)
+                print("GeoJSON conversion successful")
+
+                return Response({
+                    'success': True,
+                    'message': 'Shapefile processed successfully',
+                    'geojson_data': geojson_data
+                })
+
+        except Exception as e:
+            print(f"Error in upload_shapefile: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            return Response({
+                'success': False,
+                'error': f'Error processing shapefile: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def shapefile_to_geojson(self, shp_file_path):
+        """Convert shapefile to GeoJSON in EPSG:4326 using GeoPandas"""
+        try:
+            # Read shapefile using GeoPandas
+            gdf = gpd.read_file(shp_file_path)
+            print(f"Original CRS: {gdf.crs}")
+            print(f"Number of features: {len(gdf)}")
+            print(f"Columns: {list(gdf.columns)}")
+
+            # Reproject to EPSG:4326 if needed
+            if gdf.crs and gdf.crs != 'EPSG:4326':
+                print("Reprojecting to EPSG:4326")
+                gdf = gdf.to_crs('EPSG:4326')
+
+            # Convert to GeoJSON
+            geojson_data = gdf.to_json()
+
+            # Parse the JSON string to a Python dict for the response
+            import json
+            geojson_dict = json.loads(geojson_data)
+
+            print(f"Successfully converted {len(gdf)} features to GeoJSON")
+            return geojson_dict
+
+        except Exception as e:
+            print(f"Error in shapefile_to_geojson: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+            raise Exception(f"Error converting shapefile to GeoJSON: {str(e)}")
 
 
 class _ProposalDatatableAPIView(APIView):

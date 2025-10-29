@@ -22,6 +22,7 @@ from silrec.components.main import api as main_api
 from silrec.components.proposals import api as proposal_api
 #from silrec.components.proposals import views as proposal_views
 from silrec.components.proposals.views import ProposalExcelExportView
+from silrec.components.proposals import views as proposal_views
 #from sqs.components.gisquery import api as gisquery_api
 #from sqs.components.gisquery import views as gisquery_views
 
@@ -77,6 +78,7 @@ router.register(r'ply_paginated',forest_blocks_api.PolygonPaginatedViewSet,"ply_
 router.register(r"application_types", main_api.ApplicationTypeViewSet)
 
 router.register(r'proposals', proposal_api.ProposalViewSet, basename='proposal')
+router.register(r'proposal-uploads', proposal_api.ProposalUploadShapefileViewSet, basename='proposal-upload')
 
 
 # The URLs will now be:
@@ -128,7 +130,14 @@ urlpatterns = [
     ),
     #re_path('api/proposal-datatable/', proposal_api.ProposalDatatableAPIView.as_view(), name='proposal-datatable'),
     #re_path('api/', include(router.urls)),
-    re_path('export/proposals/excel/', ProposalExcelExportView.as_view(), name='export_proposals_excel'),
+    re_path('export/proposals/excel/', proposal_views.ProposalExcelExportView.as_view(), name='export_proposals_excel'),
+    re_path(r'^proposals/add/$', proposal_views.AddProposalView.as_view(), name='add-proposal'),
+    re_path(r'^proposals/view/(?P<pk>\d+)/$', proposal_views.ViewProposalView.as_view(), name='view-proposal'),
+
+#    re_path(r'^api/proposal-uploads/upload_shapefile/$',
+#            proposal_api.ProposalUploadShapefileViewSet.as_view({'post': 'upload_shapefile'}),
+#            name='upload-shapefile'
+#    ),
 
 #    re_path(
 #        r"^api/application_statuses_dict$",
@@ -141,6 +150,68 @@ if settings.ENABLE_DJANGO_LOGIN:
     urlpatterns.append(
         re_path(r"^ssologin/", LoginView.as_view(), name="ssologin")
     )
+
+
+# see all registered URLs
+# Add this to your urls.py temporarily
+def show_urls(request):
+    from django.urls import get_resolver
+    from django.http import JsonResponse
+    import json
+
+    def extract_urls(urlpatterns, base=''):
+        patterns = []
+        for pattern in urlpatterns:
+            if hasattr(pattern, 'url_patterns'):
+                # This is an include - recurse into it
+                patterns.extend(extract_urls(pattern.url_patterns, base + str(pattern.pattern)))
+            else:
+                url_info = {
+                    'pattern': base + str(pattern.pattern),
+                    'name': getattr(pattern, 'name', 'N/A'),
+                }
+                # For API views, try to get more info
+                if hasattr(pattern, 'callback'):
+                    url_info['view'] = pattern.callback.__name__
+                elif hasattr(pattern, 'lookup_str'):
+                    url_info['lookup_str'] = pattern.lookup_str
+                patterns.append(url_info)
+        return patterns
+
+    resolver = get_resolver()
+    all_patterns = extract_urls(resolver.url_patterns)
+
+    return JsonResponse(all_patterns, safe=False)
+
+urlpatterns.append(re_path(r'^debug/urls/$', show_urls, name='debug-urls'))
+
+# Add this to urls.py
+# Add this to urls.py - Working debug view
+def show_api_urls(request):
+    from django.http import JsonResponse
+    from django.urls import get_resolver
+    import json
+
+    def extract_urls(urlpatterns, base=''):
+        patterns = []
+        for pattern in urlpatterns:
+            if hasattr(pattern, 'url_patterns'):
+                # This is an include - recurse into it
+                patterns.extend(extract_urls(pattern.url_patterns, base + str(pattern.pattern)))
+            elif hasattr(pattern, 'pattern'):
+                url_info = {
+                    'pattern': base + str(pattern.pattern),
+                    'name': getattr(pattern, 'name', 'N/A'),
+                }
+                patterns.append(url_info)
+        return patterns
+
+    resolver = get_resolver()
+    all_patterns = extract_urls(resolver.url_patterns)
+
+    return JsonResponse(all_patterns, safe=False)
+
+urlpatterns.append(re_path(r'^debug/api-urls/$', show_api_urls, name='debug-api-urls'))
 
 #if settings.SHOW_DEBUG_TOOLBAR:
 #    from debug_toolbar.toolbar import debug_toolbar_urls

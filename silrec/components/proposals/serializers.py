@@ -11,6 +11,9 @@ class ProposalSerializer(serializers.ModelSerializer):
     processing_status_display = serializers.CharField(source='get_processing_status_display', read_only=True)
     submitter_email = serializers.SerializerMethodField()
     previous_application_title = serializers.CharField(source='previous_application.title', read_only=True, allow_null=True)
+    can_process = serializers.SerializerMethodField()
+    user_can_process = serializers.SerializerMethodField()
+    is_read_only = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
@@ -22,8 +25,8 @@ class ProposalSerializer(serializers.ModelSerializer):
             'proposal_type', 'proposal_type_name', 'proposal_type_id',
             'application_type', 'previous_application', 'previous_application_title',
             'submitter', 'submitter_email',
-            'proposed_issuance_approval', 'shapefile_json', 'shp_processed_json',
-            'migrated'
+            'proposed_issuance_approval', 'shapefile_json', 'geojson_data_processed',
+            'migrated', 'can_process', 'user_can_process', 'is_read_only',
         ]
         read_only_fields = ['lodgement_number', 'lodgement_date']
 
@@ -44,6 +47,33 @@ class ProposalSerializer(serializers.ModelSerializer):
             pass
         return ''
 
+    def get_can_process(self, obj):
+        # Check if proposal is in processable status
+        processable_statuses = ['draft', 'with_assessor_treatments', 'with_assessor_treatments', 'with_assessor_tasks']
+        import ipdb; ipdb.set_trace()
+        return obj.processing_status in processable_statuses
+
+    def get_user_can_process(self, obj):
+        # Check if current user can process
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+
+        user = request.user
+        if not user.is_staff:
+            return False
+
+        allowed_groups = ['Assessors', 'Reviewers', 'Silrec Admin']
+        user_groups = user.groups.values_list('name', flat=True)
+
+        return (any(group in user_groups for group in allowed_groups) or
+                user.is_superuser)
+
+    def get_is_read_only(self, obj):
+        # Check if proposal should be read-only for this user
+        processable_statuses = ['With Assessor', 'Declined', 'Discarded']
+        return obj.processing_status not in processable_statuses
+
 
 class ProposalDatatableSerializer(ProposalSerializer):
     class Meta(ProposalSerializer.Meta):
@@ -55,6 +85,10 @@ class ProposalDatatableSerializer(ProposalSerializer):
             'lodgement_date_formatted',
             'processing_status_display',
             'processing_status',  # Include the raw value for filtering
+            'migrated',
+            'can_process',
+            'user_can_process',
+            'is_read_only',
         ]
 
 

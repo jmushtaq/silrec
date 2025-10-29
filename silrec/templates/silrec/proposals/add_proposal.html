@@ -1,0 +1,164 @@
+{% extends 'silrec/base3.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Add New Proposal - Silrec{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
+<link rel="stylesheet" href="{% static 'css/map/map_component.css' %}">
+<link rel="stylesheet" href="{% static 'css/map/map_upload_component.css' %}">
+<style>
+    .content-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .map-section {
+        margin-bottom: 30px;
+    }
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .btn-container {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+        text-align: right;
+    }
+    .cancel-confirm-modal .modal-header {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Add New Proposal</h2>
+        <a href="{% url 'internal' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Map Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-map-marked-alt"></i> Map & Shapefile Upload
+            </h5>
+        </div>
+        <div class="card-body">
+            {% include 'map/map_component.html' %}
+            {% include 'map/map_upload_component.html' %}
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-edit"></i> Proposal Information
+            </h5>
+        </div>
+        <div class="card-body">
+            {% crispy form %}
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade cancel-confirm-modal" id="cancelConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Cancel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel? All unsaved data will be lost.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, Continue Editing</button>
+                <button type="button" class="btn btn-warning" id="confirmCancel">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+<script src="{% static 'js/map/map_component.js' %}"></script>
+<script src="{% static 'js/map/map_upload_component.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle cancel button click
+    const cancelBtn = document.querySelector('input[name="cancel"]');
+    const cancelConfirmModal = new bootstrap.Modal(document.getElementById('cancelConfirmModal'));
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            cancelConfirmModal.show();
+        });
+    }
+    
+    // Handle confirm cancel
+    document.getElementById('confirmCancel').addEventListener('click', function() {
+        window.location.href = "{% url 'internal' %}";
+    });
+    
+    // Handle form submissions
+    const form = document.getElementById('add-proposal-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = e.submitter;
+            
+            if (submitBtn && submitBtn.name === 'save_continue') {
+                // Set a flag to indicate save and continue
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'save_continue';
+                hiddenInput.value = 'true';
+                form.appendChild(hiddenInput);
+            }
+        });
+    }
+    
+    // Store shapefile data when uploading
+    if (window.shapefileUploader) {
+        const originalUploadShapefile = window.shapefileUploader.uploadShapefile;
+        window.shapefileUploader.uploadShapefile = async function(file) {
+            const result = await originalUploadShapefile.call(this, file);
+            
+            // Store the GeoJSON data in a hidden field for form submission
+            if (result && this.vectorLayer) {
+                const features = this.vectorLayer.getSource().getFeatures();
+                const format = new ol.format.GeoJSON();
+                const geojson = format.writeFeatures(features, {
+                    featureProjection: 'EPSG:3857',
+                    dataProjection: 'EPSG:4326'
+                });
+                
+                // Create or update hidden input for shapefile data
+                let shapefileInput = document.getElementById('shapefile_json_data');
+                if (!shapefileInput) {
+                    shapefileInput = document.createElement('input');
+                    shapefileInput.type = 'hidden';
+                    shapefileInput.name = 'shapefile_json';
+                    shapefileInput.id = 'shapefile_json_data';
+                    form.appendChild(shapefileInput);
+                }
+                shapefileInput.value = JSON.stringify(geojson);
+            }
+            
+            return result;
+        };
+    }
+});
+</script>
+{% endblock %}

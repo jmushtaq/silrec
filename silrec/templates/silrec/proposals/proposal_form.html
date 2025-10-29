@@ -1,0 +1,274 @@
+{% extends 'silrec/base3.html' %}
+{% load static %}
+
+{% block title %}
+    {% if mode == 'add' %}Add New Proposal{% else %}View Proposal{% endif %} - Silrec
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@9.2.4/ol.css">
+<link rel="stylesheet" href="{% static 'css/map/map_component.css' %}">
+<link rel="stylesheet" href="{% static 'css/map/map_upload_component.css' %}">
+<style>
+    .content-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .map-section {
+        margin-bottom: 30px;
+    }
+    .form-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .btn-container {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+        text-align: right;
+    }
+    .cancel-confirm-modal .modal-header {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .read-only-field {
+        background-color: #e9ecef;
+        opacity: 1;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            {% if mode == 'add' %}
+                Add New Proposal
+            {% else %}
+                View Proposal {% if not read_only %}(Edit Mode){% endif %}
+            {% endif %}
+        </h2>
+        <button type="button" class="btn btn-outline-secondary" id="backToDashboard">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+    </div>
+
+    <form method="post" id="proposal-form">
+        {% csrf_token %}
+        
+        <!-- Map Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-map-marked-alt"></i> Map & Shapefile Upload
+                </h5>
+            </div>
+            <div class="card-body">
+                {% include 'map/map_component.html' %}
+                {% include 'map/map_upload_component.html' %}
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit"></i> Proposal Information
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    Please correct the errors below.
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="text-danger">{{ form.title.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.proposal_type.id_for_label }}" class="form-label">{{ form.proposal_type.label }}</label>
+                            {{ form.proposal_type }}
+                            {% if form.proposal_type.errors %}
+                            <div class="text-danger">{{ form.proposal_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.application_type.id_for_label }}" class="form-label">{{ form.application_type.label }}</label>
+                            {{ form.application_type }}
+                            {% if form.application_type.errors %}
+                            <div class="text-danger">{{ form.application_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.processing_status.id_for_label }}" class="form-label">{{ form.processing_status.label }}</label>
+                            {{ form.processing_status }}
+                            {% if form.processing_status.errors %}
+                            <div class="text-danger">{{ form.processing_status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="btn-container">
+                    {% if not read_only %}
+                        <button type="button" name="cancel" class="btn btn-secondary me-2">Cancel</button>
+                        <button type="submit" name="save_continue" class="btn btn-outline-primary me-2">Save and Continue</button>
+                        <button type="submit" name="save" class="btn btn-primary">Save</button>
+                    {% else %}
+                        <button type="button" name="cancel" class="btn btn-secondary me-2">Back</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade cancel-confirm-modal" id="cancelConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Navigation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to leave this page? All unsaved data will be lost.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stay on Page</button>
+                <button type="button" class="btn btn-warning" id="confirmLeave">Leave Page</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://cdn.jsdelivr.net/npm/ol@9.2.4/dist/ol.js"></script>
+<script src="{% static 'js/map/map_component.js' %}"></script>
+<script src="{% static 'js/map/map_upload_component.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelConfirmModal = new bootstrap.Modal(document.getElementById('cancelConfirmModal'));
+    let leaveUrl = "{% url 'internal' %}";
+    let hasUnsavedChanges = false;
+
+    // Track form changes
+    const form = document.getElementById('proposal-form');
+    if (form) {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('change', () => {
+                hasUnsavedChanges = true;
+            });
+        });
+    }
+
+    // Handle back to dashboard button
+    document.getElementById('backToDashboard').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (hasUnsavedChanges) {
+            cancelConfirmModal.show();
+        } else {
+            window.location.href = leaveUrl;
+        }
+    });
+
+    // Handle cancel button
+    const cancelBtn = document.querySelector('button[name="cancel"]');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (hasUnsavedChanges) {
+                cancelConfirmModal.show();
+            } else {
+                window.location.href = leaveUrl;
+            }
+        });
+    }
+    
+    // Handle confirm leave
+    document.getElementById('confirmLeave').addEventListener('click', function() {
+        window.location.href = leaveUrl;
+    });
+
+    // Store shapefile data when uploading
+    if (window.shapefileUploader) {
+        const originalUploadShapefile = window.shapefileUploader.uploadShapefile;
+        window.shapefileUploader.uploadShapefile = async function(file) {
+            const result = await originalUploadShapefile.call(this, file);
+            
+            if (result && this.vectorLayer) {
+                const features = this.vectorLayer.getSource().getFeatures();
+                const format = new ol.format.GeoJSON();
+                const geojson = format.writeFeaturesObject(features, {
+                    featureProjection: 'EPSG:3857',
+                    dataProjection: 'EPSG:4326'
+                });
+                
+                let shapefileInput = document.getElementById('shapefile_json_data');
+                if (!shapefileInput) {
+                    shapefileInput = document.createElement('input');
+                    shapefileInput.type = 'hidden';
+                    shapefileInput.name = 'shapefile_json';
+                    shapefileInput.id = 'shapefile_json_data';
+                    form.appendChild(shapefileInput);
+                }
+                shapefileInput.value = JSON.stringify(geojson);
+                hasUnsavedChanges = true;
+                console.log('Shapefile data stored for form submission');
+            }
+            
+            return result;
+        };
+    }
+
+    // Set form to read-only if applicable
+    {% if read_only %}
+        const formInputs = form.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.disabled = true;
+            input.classList.add('read-only-field');
+        });
+        
+        // Also disable the shapefile upload button
+        const uploadBtn = document.getElementById('upload-shapefile-btn');
+        if (uploadBtn) {
+            uploadBtn.disabled = true;
+            uploadBtn.title = 'Upload disabled in view mode';
+        }
+    {% endif %}
+});
+</script>
+{% endblock %}

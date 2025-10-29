@@ -1,68 +1,74 @@
-from datetime import datetime, timedelta
-
-import pytz
-#from ckeditor.widgets import CKEditorWidget
 from django import forms
 from django.conf import settings
-from django.utils.safestring import mark_safe
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column, Div, HTML, ButtonHolder
+from crispy_forms.bootstrap import PrependedText, AppendedText
+from silrec.components.proposals.models import Proposal
 from silrec.components.main.models import SystemMaintenance
-#from silrec.components.proposals.models import HelpPage, SectionChecklist
+
+from datetime import datetime, timedelta
+import pytz
 
 
-#class LeasesLicensingHelpPageAdminForm(forms.ModelForm):
-#    content = forms.CharField(widget=CKEditorWidget())
-#
-#    class Meta:
-#        model = HelpPage
-#        fields = "__all__"
-#
-#
-#class SectionChecklistForm(forms.ModelForm):
-#    class Meta:
-#        model = SectionChecklist
-#        fields = "__all__"
-#
-#    def clean(self):
-#        cleaned_data = super().clean()
-#        if cleaned_data["enabled"] is False:
-#            # We don't mind any disabled record
-#            return cleaned_data
-#        if (
-#            len(self.changed_data) == 1
-#            and self.changed_data[0] == "enabled"
-#            and cleaned_data["enabled"] is False
-#        ):
-#            # When change is only setting 'enabled' field to False, no validation required
-#            return cleaned_data
-#
-#        cleaned_application_type = cleaned_data.get("application_type", None)
-#        cleaned_section = cleaned_data.get("section", None)
-#        cleaned_list_type = cleaned_data.get("list_type", None)
-#
-#        # Check if there is alreay a set of questions for the section
-#        existings = SectionChecklist.objects.filter(
-#            application_type=cleaned_application_type,
-#            section=cleaned_section,
-#            list_type=cleaned_list_type,
-#            enabled=True,
-#        ).exclude(id=self.instance.id)
-#
-#        if existings:
-#            existing = existings.first()
-#            raise forms.ValidationError(
-#                [
-#                    mark_safe(
-#                        "There is already an enabled 'Section Questions' for the "
-#                        "Application Type:{}, Section:{} and Checklist type:{}"
-#                    ).format(
-#                        existing.application_type.get_name_display(),
-#                        existing.get_section_display(),
-#                        existing.get_list_type_display(),
-#                    ),
-#                    "You can create new one after making the existing 'Section Questions' disabled.",
-#                ]
-#            )
+class ProposalForm(forms.ModelForm):
+    class Meta:
+        model = Proposal
+        fields = [
+            'title',
+            'proposal_type',
+            'application_type',
+            'processing_status',
+            # Add other fields you want users to input
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'placeholder': 'Enter proposal title'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_id = 'add-proposal-form'
+        self.helper.form_method = 'post'
+        self.helper.form_class = 'form-horizontal'
+        self.helper.label_class = 'col-lg-3'
+        self.helper.field_class = 'col-lg-9'
+
+        self.helper.layout = Layout(
+            # Map Section - Just a placeholder, actual map is in template
+            Div(
+                HTML("""
+                    <div class="map-section">
+                        <h4 class="mb-3"><i class="fas fa-map"></i> Map Section</h4>
+                        <p class="text-muted">Use the map below to upload and view shapefiles for this proposal.</p>
+                    </div>
+                """),
+                css_class='mb-4'
+            ),
+
+            # Form Fields Section
+            Div(
+                HTML('<h4 class="mb-3"><i class="fas fa-edit"></i> Proposal Details</h4>'),
+                Row(
+                    Column('title', css_class='form-group col-md-12 mb-3'),
+                ),
+                Row(
+                    Column('proposal_type', css_class='form-group col-md-6 mb-3'),
+                    Column('application_type', css_class='form-group col-md-6 mb-3'),
+                ),
+                Row(
+                    Column('processing_status', css_class='form-group col-md-6 mb-3'),
+                ),
+                css_class='form-section mb-4',
+            ),
+
+            # Action Buttons
+            ButtonHolder(
+                Submit('cancel', 'Cancel', css_class='btn btn-secondary me-2'),
+                Submit('save_continue', 'Save and Continue', css_class='btn btn-outline-primary me-2'),
+                Submit('save', 'Save', css_class='btn btn-primary'),
+            )
+        )
 
 
 class SystemMaintenanceAdminForm(forms.ModelForm):

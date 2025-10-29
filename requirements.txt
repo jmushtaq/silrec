@@ -31,3 +31,6 @@ jupyter==1.1.1
 notebook==6.5.7
 scipy==1.16.2
 openpyxl==3.1.5
+fiona==1.10.1
+django-crispy-forms==2.4
+crispy-bootstrap4==2025.6

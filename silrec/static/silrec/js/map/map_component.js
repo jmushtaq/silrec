@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing map...');
+
     // Initialize the map - Centered on Western Australia
     const map = new ol.Map({
         target: 'map',
@@ -16,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Store map instance globally for access from other scripts
     window.mapInstance = map;
+    console.log('Map instance set globally:', window.mapInstance);
 
     // Custom fullscreen functionality
     const fullscreenBtn = document.getElementById('fullscreen-btn');
@@ -70,4 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('resize', function() {
         map.updateSize();
     });
+
+    // Dispatch a custom event when map is ready
+    const mapReadyEvent = new CustomEvent('mapReady', { detail: { map: map } });
+    window.dispatchEvent(mapReadyEvent);
+    console.log('Map ready event dispatched');
 });
