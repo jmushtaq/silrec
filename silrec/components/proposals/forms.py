@@ -1,10 +1,11 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Div, HTML, ButtonHolder
 from crispy_forms.bootstrap import PrependedText, AppendedText
-from silrec.components.proposals.models import Proposal
+from silrec.components.proposals.models import Proposal, ProposalAssessorGroup, ProposalReviewerGroup, ProposalAdminGroup
 from silrec.components.main.models import SystemMaintenance
 
 from datetime import datetime, timedelta
@@ -122,3 +123,75 @@ class SystemMaintenanceAdminForm(forms.ModelForm):
 
         super().clean()
         return cleaned_data
+
+
+class ProposalAssessorGroupAdminForm(forms.ModelForm):
+    class Meta:
+        model = ProposalAssessorGroup
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(ProposalAssessorGroupAdminForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['members'].queryset = User.objects.filter(is_staff=True)
+
+    def clean(self):
+        super(ProposalAssessorGroupAdminForm, self).clean()
+        if self.instance and ProposalAssessorGroup.objects.all().exists():
+            try:
+                original_members = ProposalAssessorGroup.objects.get(id=self.instance.id).members.all()
+                current_members = self.cleaned_data.get('members')
+                for o in original_members:
+                    if o not in current_members:
+                        if self.instance.member_is_assigned(o):
+                            raise ValidationError('{} is currently assigned to a proposal(s)'.format(o.email))
+            except:
+                pass
+
+
+class ProposalReviewerGroupAdminForm(forms.ModelForm):
+    class Meta:
+        model = ProposalReviewerGroup
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(ProposalReviewerGroupAdminForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['members'].queryset = User.objects.filter(is_staff=True)
+
+    def clean(self):
+        super(ProposalReviewerGroupAdminForm, self).clean()
+        if self.instance:
+            try:
+                original_members = ProposalReviewerGroup.objects.get(id=self.instance.id).members.all()
+                current_members = self.cleaned_data.get('members')
+                for o in original_members:
+                    if o not in current_members:
+                        if self.instance.member_is_assigned(o):
+                            raise ValidationError('{} is currently assigned to a proposal(s)'.format(o.email))
+            except:
+                pass
+
+
+class ProposalAdminGroupAdminForm(forms.ModelForm):
+    class Meta:
+        model = ProposalAdminGroup
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(ProposalAdminGroupAdminForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields['members'].queryset = User.objects.filter(is_staff=True)
+
+    def clean(self):
+        super(ProposalAdminGroupAdminForm, self).clean()
+        if self.instance:
+            try:
+                original_members = ProposalAdminGroup.objects.get(id=self.instance.id).members.all()
+                current_members = self.cleaned_data.get('members')
+                for o in original_members:
+                    if o not in current_members:
+                        if self.instance.member_is_assigned(o):
+                            raise ValidationError('{} is currently assigned to a proposal(s)'.format(o.email))
+            except:
+                pass

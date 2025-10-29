@@ -134,7 +134,7 @@ class ProposalViewSet(mixins.ListModelMixin,
 
             # Serialize data using the datatable serializer
             from .serializers import ProposalDatatableSerializer
-            serializer = ProposalDatatableSerializer(queryset, many=True)
+            serializer = ProposalDatatableSerializer(queryset, context={'request':request}, many=True)
             data = serializer.data
 
             print(f"Returning {len(data)} records after filtering")
@@ -314,7 +314,7 @@ class _ProposalDatatableAPIView(APIView):
 
             # Serialize data
             from .serializers import ProposalDatatableSerializer
-            serializer = ProposalDatatableSerializer(queryset, many=True)
+            serializer = ProposalDatatableSerializer(queryset, context={'request':request}, many=True)
             data = serializer.data
 
             print(f"Returning {len(data)} records after filtering")

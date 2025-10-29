@@ -25,6 +25,7 @@ from silrec.components.proposals.views import ProposalExcelExportView
 from silrec.components.proposals import views as proposal_views
 #from sqs.components.gisquery import api as gisquery_api
 #from sqs.components.gisquery import views as gisquery_views
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 #schema_view = get_swagger_view(title='SQS API')
 
@@ -213,9 +214,9 @@ def show_api_urls(request):
 
 urlpatterns.append(re_path(r'^debug/api-urls/$', show_api_urls, name='debug-api-urls'))
 
-#if settings.SHOW_DEBUG_TOOLBAR:
-#    from debug_toolbar.toolbar import debug_toolbar_urls
-#
-#    urlpatterns = [
-#        *urlpatterns,
-#    ] + debug_toolbar_urls()
+if settings.SHOW_DEBUG_TOOLBAR:
+    from debug_toolbar.toolbar import debug_toolbar_urls
+
+    urlpatterns = [
+        *urlpatterns,
+    ] + debug_toolbar_urls()

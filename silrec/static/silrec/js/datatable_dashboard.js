@@ -65,6 +65,7 @@ class DatatableDashboard {
         if ($.fn.DataTable.isDataTable(table)) {
             $(table).DataTable().destroy();
         }
+        console.log('JM5: ' + JSON.stringify(this.getColumns()))
 
         this.table = $(table).DataTable({
             processing: true,
@@ -145,8 +146,9 @@ class DatatableDashboard {
 
     static renderActionsColumn(row) {
         // Check if user can process this proposal
-        console.log('JM3: ' + JSON.stringify(row))
-        const canProcess = row.can_process && row.user_can_process;
+        //console.log('JM3: ' + JSON.stringify(row))
+        console.log('JM4: ' + JSON.stringify(row))
+        const canProcess = row.can_assess || row.can_review;
         const isReadOnly = row.is_read_only;
 
         if (canProcess && !isReadOnly) {

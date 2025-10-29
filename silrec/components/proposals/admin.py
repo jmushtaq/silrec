@@ -67,3 +67,77 @@ class ApplicationTypeAdmin(admin.ModelAdmin):
     readonly_fields = ["name"]
 
 
+@admin.register(models.ProposalOfficerGroup)
+class ProposalOfficerGroupAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    filter_horizontal = ('members',)
+    form = forms.ProposalAssessorGroupAdminForm
+    #readonly_fields = ['default']
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.default:
+            return False
+        return super(ProposalOfficerGroupAdmin, self).has_delete_permission(request, obj)
+
+    def has_add_permission(self, request):
+        # Check if any records already exist
+        if models.ProposalOfficerGroup.objects.exists():
+            return False
+        return True
+
+
+@admin.register(models.ProposalAssessorGroup)
+class ProposalAssessorGroupAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    filter_horizontal = ('members',)
+    form = forms.ProposalAssessorGroupAdminForm
+    #readonly_fields = ['default']
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.default:
+            return False
+        return super(ProposalAssessorGroupAdmin, self).has_delete_permission(request, obj)
+
+    def has_add_permission(self, request):
+        # Check if any records already exist
+        if models.ProposalAssessorGroup.objects.exists():
+            return False
+        return True
+
+
+@admin.register(models.ProposalReviewerGroup)
+class ProposalReviewerGroupAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    filter_horizontal = ('members',)
+    form = forms.ProposalReviewerGroupAdminForm
+    #readonly_fields = ['default']
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.default:
+            return False
+        return super(ProposalReviewerGroupAdmin, self).has_delete_permission(request, obj)
+
+    def has_add_permission(self, request):
+        # Check if any records already exist
+        if models.ProposalReviewerGroup.objects.exists():
+            return False
+        return True
+
+
+@admin.register(models.ProposalAdminGroup)
+class ProposalAdminGroupAdmin(admin.ModelAdmin):
+    list_display = ['name']
+    filter_horizontal = ('members',)
+    form = forms.ProposalAdminGroupAdminForm
+    #readonly_fields = ['default']
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.default:
+            return False
+        return super(ProposalAdminGroupAdmin, self).has_delete_permission(request, obj)
+
+    def has_add_permission(self, request):
+        # Check if any records already exist
+        if models.ProposalAdminGroup.objects.exists():
+            return False
+        return True

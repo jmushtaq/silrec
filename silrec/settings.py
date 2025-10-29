@@ -29,7 +29,7 @@ DEPT_DOMAINS = env('DEPT_DOMAINS', ['dpaw.wa.gov.au', 'dbca.wa.gov.au'])
 SYSTEM_MAINTENANCE_WARNING = env('SYSTEM_MAINTENANCE_WARNING', 24) # hours
 LEDGER_USER = env('LEDGER_USER', 'asi@dbca.wa.gov.au')
 LEDGER_PASS = env('LEDGER_PASS')
-#SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
+SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
 BUILD_TAG = env('BUILD_TAG', hashlib.md5(os.urandom(32)).hexdigest())  # URL of the Dev app.js served by webpack & express
 ENABLE_DJANGO_LOGIN = env('ENABLE_DJANGO_LOGIN', False)
 LOGIN_REDIRECT_URL = "/"  # new
@@ -177,9 +177,9 @@ INSTALLED_APPS = [
     #'rest_framework.authtoken',
     'rest_framework_gis',
     'crispy_forms',
-    'crispy_bootstrap4'
+    'crispy_bootstrap4',
     #'rest_framework_swagger',
-    #"debug_toolbar",
+    "debug_toolbar",
     #'pympler',
 
     #'appmonitor_client',
@@ -239,18 +239,19 @@ MIDDLEWARE = [
     'dbca_utils.middleware.SSOLoginMiddleware',
     #'silrec.middleware.CacheControlMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
-#SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
-#if SHOW_DEBUG_TOOLBAR:
-#    INTERNAL_IPS = [
-#        "127.0.0.1",
-#    ]
-#
-#    MIDDLEWARE = [
-#        "debug_toolbar.middleware.DebugToolbarMiddleware",
-#        *MIDDLEWARE,
-#    ]
+SHOW_DEBUG_TOOLBAR = env('SHOW_DEBUG_TOOLBAR', False)
+if SHOW_DEBUG_TOOLBAR:
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]
+
+    MIDDLEWARE = [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        *MIDDLEWARE,
+    ]
 #
 #    DEBUG_TOOLBAR_PANELS = [
 #	'debug_toolbar.panels.timer.TimerPanel',
@@ -504,13 +505,6 @@ LOGGING = {
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
-# for testing
-if "--disable-cache" in sys.argv:
-    #USE_SQS_CACHING = False
-    CACHES['default'] = {'BACKEND': 'django.core.cache.backends.dummy.DummyCache',}
-    sys.argv.remove("--disable-cache")
-
-
 CSRF_TRUSTED_ORIGINS_STRING = decouple.config("CSRF_TRUSTED_ORIGINS", default='[]')
 CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
 
@@ -518,7 +512,6 @@ CSRF_TRUSTED_ORIGINS = json.loads(str(CSRF_TRUSTED_ORIGINS_STRING))
 # (_save method of FileSystemStorage class)
 # As it causes a permission exception when using azure network drives
 FILE_UPLOAD_PERMISSIONS = None
-
 TEMPLATE_HEADER_LOGO = "/static/silrec/img/logo-park-stay-trunc.gif"
 
 

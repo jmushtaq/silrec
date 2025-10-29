@@ -83,20 +83,7 @@ class ViewProposalView(UserPassesTestMixin, UpdateView):
         if not user.is_staff:
             return False
 
-        # Check if proposal is in processable status
-        processable_statuses = ['With Assessor']
-        if proposal.processing_status not in processable_statuses:
-            return False
-
-        # Check user groups and permissions
-        allowed_groups = ['Assessors', 'Reviewers', 'Silrec Admin']
-        user_groups = user.groups.values_list('name', flat=True)
-
-        if (any(group in user_groups for group in allowed_groups) or
-            user.is_superuser):
-            return True
-
-        return False
+        return proposal.can_assess(user) or proposal.can_review(user) or proposal.processing_status==proposal.PROCESSING_STATUS_DRAFT
 
     def form_valid(self, form):
         if not self.can_process_proposal(self.get_object()):

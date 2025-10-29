@@ -171,36 +171,17 @@ class ProposalType(models.Model):
         app_label = "silrec"
 
 
-#class ProposalManager(models.Manager):
-#    def get_queryset(self):
-#        return (
-#            super()
-#            .get_queryset()
-#            .select_related(
-#                "proposal_type", "org_applicant", "application_type", "approval"
-#            )
-#        )
-
-
-class ProposalAssessorGroup(models.Model):
+class ProposalGroup(models.Model):
     name = models.CharField(max_length=255)
     members = models.ManyToManyField(User)
     default = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'silrec'
+        abstract = True
 
     def __str__(self):
         return self.name
-
-    def clean(self):
-        try:
-            default = ProposalAssessorGroup.objects.get(default=True)
-        except ProposalAssessorGroup.DoesNotExist:
-            default = None
-
-        if default and self.default:
-            raise ValidationError('There can only be one default proposal assessor group')
 
     def member_is_assigned(self, member):
         for p in self.current_proposals:
@@ -209,13 +190,173 @@ class ProposalAssessorGroup(models.Model):
         return False
 
     @property
-    def current_proposals(self):
-        assessable_states = ['with_assessor','with_assessor_tre','with_assessor_requirements']
-        return Proposal.objects.filter(processing_status__in=assessable_states)
-
-    @property
     def members_email(self):
         return [i.email for i in self.members.all()]
+
+
+class ProposalOfficerGroup(ProposalGroup):
+    class Meta:
+        app_label = 'silrec'
+
+    @property
+    def current_proposals(self):
+        return Proposal.objects.filter(processing_status__in=[Proposal.PROCESSING_STATUS_DRAFT])
+
+    def clean(self):
+        try:
+            default = ProposalOfficerGroup.objects.get(default=True)
+        except ProposalOfficerGroup.DoesNotExist:
+            default = None
+
+
+class ProposalAssessorGroup(ProposalGroup):
+    class Meta:
+        app_label = 'silrec'
+
+    @property
+    def current_proposals(self):
+        return Proposal.objects.filter(processing_status__in=Proposal.ASSESSABLE_STATES)
+
+    def clean(self):
+        try:
+            default = ProposalAssessorGroup.objects.get(default=True)
+        except ProposalAssessorGroup.DoesNotExist:
+            default = None
+
+
+class ProposalReviewerGroup(ProposalGroup):
+    class Meta:
+        app_label = 'silrec'
+
+    @property
+    def current_proposals(self):
+        return Proposal.objects.filter(processing_status__in=Proposal.REVIEWABLE_STATES)
+
+    def clean(self):
+        try:
+            default = ProposalReviewerGroup.objects.get(default=True)
+        except ProposalReviewerGroup.DoesNotExist:
+            default = None
+
+
+class ProposalAdminGroup(ProposalGroup):
+    class Meta:
+        app_label = 'silrec'
+
+    @property
+    def current_proposals(self):
+        states = Proposal.REVIEWABLE_STATES + Proposal.REVIEWABLE_STATES + [Proposal.PROCESSING_STATUS_DRAFT]
+        return Proposal.objects.filter(processing_status__in=states)
+
+    def clean(self):
+        try:
+            default = ProposalAdminGroup.objects.get(default=True)
+        except ProposalAdminGroup.DoesNotExist:
+            default = None
+
+
+#class ProposalAssessorGroup(models.Model):
+#    name = models.CharField(max_length=255)
+#    members = models.ManyToManyField(User)
+#    default = models.BooleanField(default=False)
+#
+#    class Meta:
+#        app_label = 'silrec'
+#
+#    def __str__(self):
+#        return self.name
+#
+#    def clean(self):
+#        try:
+#            default = ProposalAssessorGroup.objects.get(default=True)
+#        except ProposalAssessorGroup.DoesNotExist:
+#            default = None
+#
+##        if default and self.default:
+##            raise ValidationError('There can only be one default proposal assessor group')
+#
+#    def member_is_assigned(self, member):
+#        for p in self.current_proposals:
+#            if p.assigned_officer == member:
+#                return True
+#        return False
+#
+#    @property
+#    def current_proposals(self):
+#        return Proposal.objects.filter(processing_status__in=Proposal.ASSESSABLE_STATES)
+#
+#    @property
+#    def members_email(self):
+#        return [i.email for i in self.members.all()]
+#
+#
+#class ProposalReviewerGroup(models.Model):
+#    name = models.CharField(max_length=255)
+#    members = models.ManyToManyField(User)
+#    default = models.BooleanField(default=False)
+#
+#    class Meta:
+#        app_label = 'silrec'
+#
+#    def __str__(self):
+#        return self.name
+#
+#    def clean(self):
+#        try:
+#            default = ProposalReviewerGroup.objects.get(default=True)
+#        except ProposalReviewerGroup.DoesNotExist:
+#            default = None
+#
+##        if default and self.default:
+##            raise ValidationError('There can only be one default proposal reviewer group')
+#
+#    def member_is_assigned(self, member):
+#        for p in self.current_proposals:
+#            if p.assigned_officer == member:
+#                return True
+#        return False
+#
+#    @property
+#    def current_proposals(self):
+#        return Proposal.objects.filter(processing_status__in=Proposal.REVIEWABLE_STATES)
+#
+#    @property
+#    def members_email(self):
+#        return [i.email for i in self.members.all()]
+#
+#class ProposalAdminGroup(models.Model):
+#    name = models.CharField(max_length=255)
+#    members = models.ManyToManyField(User)
+#    default = models.BooleanField(default=False)
+#
+#    class Meta:
+#        app_label = 'silrec'
+#
+#    def __str__(self):
+#        return self.name
+#
+#    def clean(self):
+#        try:
+#            default = ProposalAdminGroup.objects.get(default=True)
+#        except ProposalAdminGroup.DoesNotExist:
+#            default = None
+#
+##        if default and self.default:
+##            raise ValidationError('There can only be one default proposal admin group')
+#
+#    def member_is_assigned(self, member):
+#        for p in self.current_proposals:
+#            if p.assigned_officer == member:
+#                return True
+#        return False
+#
+#    @property
+#    def current_proposals(self):
+#        return Proposal.objects.filter(processing_status__in=Proposal.REVIEWABLE_STATES)
+#
+#    @property
+#    def members_email(self):
+#        return [i.email for i in self.members.all()]
 
 
 class Proposal(RevisionedMixin, DirtyFieldsMixin):
@@ -251,6 +392,7 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
     ]
 
     REVIEWABLE_STATES = [PROCESSING_STATUS_WITH_REVIEWER]
+    READ_ONLY_STATES = [PROCESSING_STATUS_REVIEW_COMPLETED, PROCESSING_STATUS_DECLINED, PROCESSING_STATUS_DISCARDED]
 
     proposal_type = models.ForeignKey(
         ProposalType, blank=True, null=True, on_delete=models.SET_NULL
@@ -305,21 +447,32 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
     def submitter_obj(self):
         return User.objects.get(id=self.submitter)
 
-    def __assessor_group(self):
-            return ProposalAssessorGroup.objects.get(default=True)
+    def __officer_group(self):
+        return ProposalOfficerGroup.objects.get(default=True)
 
-    def __approver_group(self):
-        return ProposalApproverGroup.objects.get(default=True)
+    def __assessor_group(self):
+        return ProposalAssessorGroup.objects.get(default=True)
+
+    def __reviewer_group(self):
+        return ProposalReviewerGroup.objects.get(default=True)
+
+    def __admin_group(self):
+        return ProposalAdminGroup.objects.get(default=True)
 
     @property
     def can_user_view(self):
         return True
 
     @property
-    def can_user_edit(self):
-        """ :return: True if the application is in one of the editable status.
-        """
-        return self.customer_status in self.CUSTOMER_EDITABLE_STATE
+    def can_user_edit(self, user):
+        return self.can_assess(user) or self.can_review(user) or self.processing_status==self.PROCESSING_STATUS_DRAFT
+
+    @property
+    def can_user_edit(self, user):
+        if not user.is_staff:
+            return False
+
+        return self.is_officer(user) or self.can_assess(user) or self.can_review(user) or self.processing_status==self.PROCESSING_STATUS_DRAFT
 
     @property
     def can_user_view(self):
@@ -327,12 +480,25 @@ class Proposal(RevisionedMixin, DirtyFieldsMixin):
         """
         return self.customer_status in self.CUSTOMER_VIEWABLE_STATE
 
+    def is_admin(self,user):
+        return  user in self.__admin_group().members.all() or user.is_superuser 
+
+    def is_officer(self,user):
+        return  user in self.__officer_group().members.all() or user.is_superuser 
+
     def can_assess(self,user):
         if self.processing_status in self.ASSESSABLE_STATES:
-            return self.__assessor_group() in user.proposalassessorgroup_set.all()
-        elif self.processing_status in self.REVIEWABLE_STATES:
-            return self.__reviewer_group() in user.proposalreviewergroup_set.all()
+            #return self.__assessor_group() in user.proposalassessorgroup_set.all()
+            return user in self.__assessor_group().members.all() or self.is_admin(user)
         return False
+
+    def can_review(self,user):
+        if self.processing_status in self.REVIEWABLE_STATES:
+            #return self.__reviewer_group() in user.proposalreviewergroup_set.all()
+            #import ipdb; ipdb.set_trace()
+            return user in self.__reviewer_group().members.all() or self.is_admin(user)
+        return False
+
 
     @property
     def shp_to_gdf(self):

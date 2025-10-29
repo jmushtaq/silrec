@@ -1,0 +1,36 @@
+src/main.js
+[
+{
+    "model": "silrec.proposaladmingroup",
+    "pk": 1,
+    "fields": {
+        "name": "Admin",
+        "default": True,
+        "members": [
+            1
+        ]
+    }
+},
+{
+    "model": "silrec.proposalassessorgroup",
+    "pk": 2,
+    "fields": {
+        "name": "Assessors",
+        "default": True,
+        "members": [
+            1
+        ]
+    }
+},
+{
+    "model": "silrec.proposalreviewergroup",
+    "pk": 3,
+    "fields": {
+        "name": "Reviewers",
+        "default": True,
+        "members": [
+            1
+        ]
+    }
+}
+]
